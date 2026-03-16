@@ -1,5 +1,9 @@
 # iTrain
 
+## Video Presentation
+- Click on this link
+- https://www.youtube.com/watch?v=xhzOJR1KW7E
+
 ## Team Members
 - Coby Colaiacovo — ccolaiac@asu.edu
 - Alexandra Jacapraro — ajacapra@asu.edu

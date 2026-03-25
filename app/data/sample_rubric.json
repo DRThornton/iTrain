@@ -1,0 +1,17 @@
+{
+    "must_mention_any": [
+        "report to supervisor",
+        "ask a manager",
+        "customer safety",
+        "clean spill",
+        "block the area",
+        "follow emergency procedures"
+    ],
+    "bad_actions": [
+        "ignore",
+        "guess",
+        "leave it",
+        "walk away",
+        "do nothing"
+    ]
+}

@@ -1,0 +1,42 @@
+{
+  "learner_name": "Demo User",
+  "completed_at": "2026-03-26T03:43:52.375067Z",
+  "summary": {
+    "good": 0,
+    "neutral": 3,
+    "bad": 0
+  },
+  "recommendation": "pass",
+  "results": [
+    {
+      "scenario_id": 1,
+      "prompt": "Scenario 1:\nA worker is in a situation related to this policy:\n\"Retail Store Safety and Customer Service Handbook\"\n\nWhat would you do next, and why?",
+      "response": "I would do what i can and ask again later what i should of done.",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "Retail Store Safety and Customer Service Handbook"
+      }
+    },
+    {
+      "scenario_id": 2,
+      "prompt": "Scenario 2:\nA worker is in a situation related to this policy:\n\"1. Employees must clean spills immediately or block the area and report the hazard.\"\n\nWhat would you do next, and why?",
+      "response": "I would clean the spill and put down a cone to protect the area from others if they didn't know",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "1. Employees must clean spills immediately or block the area and report the hazard."
+      }
+    },
+    {
+      "scenario_id": 3,
+      "prompt": "Scenario 3:\nA worker is in a situation related to this policy:\n\"2. If a customer is upset, remain calm, listen respectfully, and contact a supervisor if needed.\"\n\nWhat would you do next, and why?",
+      "response": "I listen to them and do my best to help them if i can. i give them advice that could help them next time.",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "2. If a customer is upset, remain calm, listen respectfully, and contact a supervisor if needed."
+      }
+    }
+  ]
+}

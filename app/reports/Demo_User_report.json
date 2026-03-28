@@ -1,41 +1,41 @@
 {
   "learner_name": "Demo User",
-  "completed_at": "2026-03-26T03:43:52.375067Z",
+  "completed_at": "2026-03-28T20:11:52.382694Z",
   "summary": {
-    "good": 0,
-    "neutral": 3,
+    "good": 1,
+    "neutral": 2,
     "bad": 0
   },
   "recommendation": "pass",
   "results": [
     {
       "scenario_id": 1,
-      "prompt": "Scenario 1:\nA worker is in a situation related to this policy:\n\"Retail Store Safety and Customer Service Handbook\"\n\nWhat would you do next, and why?",
-      "response": "I would do what i can and ask again later what i should of done.",
+      "prompt": "You are starting your shift for the day. While getting ready for work, you notice that your area is not fully prepared and there may be a cleanliness or readiness issue before customers arrive. What do you do first, and why?",
+      "response": "I get a cleaning cloth and make sure I clean up before customers arrive.",
       "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "Retail Store Safety and Customer Service Handbook"
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: clean, clean.",
+        "citation": "1. Clean apron and name badge - It is important that your apron be clean and"
       }
     },
     {
       "scenario_id": 2,
-      "prompt": "Scenario 2:\nA worker is in a situation related to this policy:\n\"1. Employees must clean spills immediately or block the area and report the hazard.\"\n\nWhat would you do next, and why?",
-      "response": "I would clean the spill and put down a cone to protect the area from others if they didn't know",
+      "prompt": "Later in the shift, a customer approaches you with a problem and wants help right away. You feel pressure to respond quickly, but you are not completely sure what the correct store procedure is. How do you handle the situation?",
+      "response": "I go to the break room and hide away.",
       "score": {
         "label": "neutral",
         "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "1. Employees must clean spills immediately or block the area and report the hazard."
+        "citation": "within a store. It is, in most cases, the fi rst department a customer sees. With Americans eating"
       }
     },
     {
       "scenario_id": 3,
-      "prompt": "Scenario 3:\nA worker is in a situation related to this policy:\n\"2. If a customer is upset, remain calm, listen respectfully, and contact a supervisor if needed.\"\n\nWhat would you do next, and why?",
-      "response": "I listen to them and do my best to help them if i can. i give them advice that could help them next time.",
+      "prompt": "Near the end of the workday, you notice a situation that could become unsafe or should be reported before it gets worse. Other employees are busy, and it would be easy to ignore it. What do you do next, and why?",
+      "response": "I tell another coworker to try to handle it.",
       "score": {
         "label": "neutral",
         "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "2. If a customer is upset, remain calm, listen respectfully, and contact a supervisor if needed."
+        "citation": "2. Box cutter or safety cutter - For opening cases or cutting off box lids for display."
       }
     }
   ]

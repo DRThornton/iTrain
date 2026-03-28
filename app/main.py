@@ -2,7 +2,7 @@ import streamlit as st
 
 from source_code.ingest import load_handbook
 from source_code.report import build_manager_report, save_report
-from source_code.scenarios import generate_scenarios
+from source_code.scenarios import generate_scenarios, extract_policies
 from source_code.scoring import load_rubric, score_response
 
 
@@ -13,6 +13,8 @@ st.write("Interactive job-training scenario demo")
 
 if "scenarios" not in st.session_state:
     st.session_state.scenarios = []
+if "detected_policies" not in st.session_state:
+    st.session_state.detected_policies = []
 if "answers" not in st.session_state:
     st.session_state.answers = {}
 if "report" not in st.session_state:
@@ -23,6 +25,7 @@ with st.sidebar:
     learner_name = st.text_input("Learner name", value="Demo User")
     uploaded_handbook = st.file_uploader("Upload handbook (.txt or .pdf)", type=["txt", "pdf"])
     rubric_path = "app/data/sample_rubric.json"
+    show_debug = st.checkbox("Show extracted policy debug", value=False)
 
     if st.button("Load Training Module"):
         try:
@@ -31,7 +34,8 @@ with st.sidebar:
             else:
                 with open("app/data/sample_handbook.txt", "r", encoding="utf-8") as f:
                     handbook_text = f.read()
-
+            detected_policies = extract_policies(handbook_text)
+            st.session_state.detected_policies = detected_policies[:10]
             scenarios = generate_scenarios(handbook_text, num_scenarios=3)
             st.session_state.scenarios = scenarios
             st.session_state.answers = {}
@@ -44,6 +48,10 @@ tabs = st.tabs(["Learner View", "Manager View"])
 
 with tabs[0]:
     st.subheader("Learner View")
+
+    if show_debug and st.session_state.detected_policies:
+        st.write("### Extracted Policies (Debug)")
+        st.json(st.session_state.detected_policies)
 
     if not st.session_state.scenarios:
         st.info("Load a training module from the sidebar to begin.")

@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 
-def build_manager_report(results, learner_name="Anonymous"):
+def build_manager_report(results, learner_name="Anonymous", focus_areas=None):
     summary = {
         "good": sum(1 for r in results if r["score"]["label"] == "good"),
         "neutral": sum(1 for r in results if r["score"]["label"] == "neutral"),
@@ -11,7 +11,7 @@ def build_manager_report(results, learner_name="Anonymous"):
     }
 
     recommendation = "pass"
-    if summary["bad"] >= 1:
+    if summary["bad"] >= 1 or summary["neutral"] >= 2:
         recommendation = "review"
     if summary["bad"] >= 2:
         recommendation = "fail"
@@ -21,6 +21,7 @@ def build_manager_report(results, learner_name="Anonymous"):
         "completed_at": datetime.utcnow().isoformat() + "Z",
         "summary": summary,
         "recommendation": recommendation,
+        "focus_areas": focus_areas or [],
         "results": results,
     }
     return report

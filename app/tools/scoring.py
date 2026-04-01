@@ -21,10 +21,16 @@ def score_response(response: str, policy: str, rubric: dict):
         if phrase.lower() in response_lower:
             matched_bad.append(phrase)
 
-    policy_words = [w for w in policy_lower.split() if len(w) > 4]
-    overlap = [w for w in policy_words if w in response_lower]
+    policy_words = [w.strip(".,") for w in policy_lower.split() if len(w) > 4]
+    overlap = []
+    for word in policy_words:
+        if word in response_lower and word not in overlap:
+            overlap.append(word)
 
-    if matched_bad:
+    if not response.strip():
+        label = "bad"
+        rationale = "No response was provided, so readiness could not be demonstrated."
+    elif matched_bad:
         label = "bad"
         rationale = f"The answer includes potentially unsafe or incorrect action(s): {', '.join(matched_bad)}."
     elif matched_good or len(overlap) >= 2:
@@ -38,5 +44,5 @@ def score_response(response: str, policy: str, rubric: dict):
     return {
         "label": label,
         "rationale": rationale,
-        "citation": policy
+        "citation": policy,
     }

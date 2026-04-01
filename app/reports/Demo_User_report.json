@@ -1,27 +1,32 @@
 {
   "learner_name": "Demo User",
-  "completed_at": "2026-03-28T20:11:52.382694Z",
+  "completed_at": "2026-04-01T22:32:15.110052Z",
   "summary": {
-    "good": 1,
-    "neutral": 2,
-    "bad": 0
+    "good": 0,
+    "neutral": 4,
+    "bad": 1
   },
-  "recommendation": "pass",
+  "recommendation": "review",
+  "focus_areas": [
+    "customer_service",
+    "safety",
+    "reporting"
+  ],
   "results": [
     {
       "scenario_id": 1,
-      "prompt": "You are starting your shift for the day. While getting ready for work, you notice that your area is not fully prepared and there may be a cleanliness or readiness issue before customers arrive. What do you do first, and why?",
-      "response": "I get a cleaning cloth and make sure I clean up before customers arrive.",
+      "prompt": "A customer approaches you with a problem and wants help right away. You feel pressure to respond quickly, but you are not completely sure what the correct store procedure is. How do you handle the situation?",
+      "response": "I walk away without saying anything and hide in the back of the store.",
       "score": {
-        "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: clean, clean.",
-        "citation": "1. Clean apron and name badge - It is important that your apron be clean and"
+        "label": "bad",
+        "rationale": "The answer includes potentially unsafe or incorrect action(s): walk away.",
+        "citation": "within a store. It is, in most cases, the fi rst department a customer sees. With Americans eating"
       }
     },
     {
       "scenario_id": 2,
-      "prompt": "Later in the shift, a customer approaches you with a problem and wants help right away. You feel pressure to respond quickly, but you are not completely sure what the correct store procedure is. How do you handle the situation?",
-      "response": "I go to the break room and hide away.",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. How would you help the customer while making sure you follow the correct procedure instead of guessing?",
+      "response": "I would tell them to ask someone else.",
       "score": {
         "label": "neutral",
         "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
@@ -29,13 +34,33 @@
       }
     },
     {
-      "scenario_id": 3,
-      "prompt": "Near the end of the workday, you notice a situation that could become unsafe or should be reported before it gets worse. Other employees are busy, and it would be easy to ignore it. What do you do next, and why?",
-      "response": "I tell another coworker to try to handle it.",
+      "scenario_id": 2,
+      "prompt": "Near the end of the workday, you notice a situation that could become unsafe if nobody acts. What do you do next, and why?",
+      "response": "What is the situation?",
       "score": {
         "label": "neutral",
         "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
         "citation": "2. Box cutter or safety cutter - For opening cases or cutting off box lids for display."
+      }
+    },
+    {
+      "scenario_id": 3,
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. What immediate action would reduce the safety risk, and when would you escalate it?",
+      "response": "I would try to address the problem and make sure no one approaches the area.",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "2. Box cutter or safety cutter - For opening cases or cutting off box lids for display."
+      }
+    },
+    {
+      "scenario_id": 3,
+      "prompt": "You notice an issue that should be documented or escalated before it gets worse. Other employees are busy. What do you do?",
+      "response": "I take care of the situation right away as is more important than my current task.",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "educated as to what is expected each and every day. Produce managers, full and part time"
       }
     }
   ]

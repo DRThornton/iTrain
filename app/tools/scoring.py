@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 
@@ -20,6 +21,19 @@ def score_response(response: str, policy: str, rubric: dict):
     for phrase in rubric.get("bad_actions", []):
         if phrase.lower() in response_lower:
             matched_bad.append(phrase)
+
+    confusion_patterns = [
+        r"\bi guess\b",
+        r"\bi am confused\b",
+        r"\bi'm confused\b",
+        r"\bunclear\b",
+        r"\bneed more clarification\b",
+        r"\bnot sure what (?:the )?scenario is\b",
+    ]
+    expresses_confusion = any(re.search(pattern, response_lower) for pattern in confusion_patterns)
+
+    if expresses_confusion:
+        matched_bad = [phrase for phrase in matched_bad if phrase.lower() != "guess"]
 
     policy_words = [w.strip(".,") for w in policy_lower.split() if len(w) > 4]
     overlap = []

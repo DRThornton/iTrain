@@ -1,66 +1,54 @@
 {
   "learner_name": "Demo User",
-  "completed_at": "2026-04-01T22:32:15.110052Z",
+  "completed_at": "2026-04-10T05:25:22.856781Z",
   "summary": {
-    "good": 0,
-    "neutral": 4,
-    "bad": 1
+    "good": 2,
+    "neutral": 2,
+    "bad": 0
   },
   "recommendation": "review",
   "focus_areas": [
-    "customer_service",
-    "safety",
     "reporting"
   ],
   "results": [
     {
       "scenario_id": 1,
-      "prompt": "A customer approaches you with a problem and wants help right away. You feel pressure to respond quickly, but you are not completely sure what the correct store procedure is. How do you handle the situation?",
-      "response": "I walk away without saying anything and hide in the back of the store.",
+      "prompt": "You run into a situation involving physical and factors while getting ready to start work. What needs to be taken care of before you continue with the shift?",
+      "response": "I am confused but i would say that I would take care of the physical factors that are coming up.",
       "score": {
-        "label": "bad",
-        "rationale": "The answer includes potentially unsafe or incorrect action(s): walk away.",
-        "citation": "within a store. It is, in most cases, the fi rst department a customer sees. With Americans eating"
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: physical, factors.",
+        "citation": "Physical factors that can contribute to heat related illness shall be taken into consideration before"
       }
     },
     {
       "scenario_id": 2,
-      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. How would you help the customer while making sure you follow the correct procedure instead of guessing?",
-      "response": "I would tell them to ask someone else.",
+      "prompt": "You run into a situation involving identify and hazards. What immediate action should you take? When would you report hazards or unsafe conditions to their supervisor?",
+      "response": "i would identify the hazards and report them immediately to a supervisor.",
       "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "within a store. It is, in most cases, the fi rst department a customer sees. With Americans eating"
-      }
-    },
-    {
-      "scenario_id": 2,
-      "prompt": "Near the end of the workday, you notice a situation that could become unsafe if nobody acts. What do you do next, and why?",
-      "response": "What is the situation?",
-      "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "2. Box cutter or safety cutter - For opening cases or cutting off box lids for display."
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: identify, report, hazards.",
+        "citation": "\u2022 Identify and report hazards or unsafe conditions to their supervisor."
       }
     },
     {
       "scenario_id": 3,
-      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. What immediate action would reduce the safety risk, and when would you escalate it?",
-      "response": "I would try to address the problem and make sure no one approaches the area.",
+      "prompt": "You run into a situation involving superintendent and ensure. What should you do first, and what details would you communicate?",
+      "response": "I would involve the superintendent and ensure that they are made aware of what is happening.",
       "score": {
         "label": "neutral",
         "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "2. Box cutter or safety cutter - For opening cases or cutting off box lids for display."
+        "citation": "The Superintendent/Supervisor must ensure personal factors that contribute to heat related illness are"
       }
     },
     {
-      "scenario_id": 3,
-      "prompt": "You notice an issue that should be documented or escalated before it gets worse. Other employees are busy. What do you do?",
-      "response": "I take care of the situation right away as is more important than my current task.",
+      "scenario_id": 4,
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"The Superintendent/Supervisor must ensure personal factors that contribute to heat related illness are\". Who should be informed, and what details would you communicate so the issue is handled correctly?",
+      "response": "I would make sure the supervisor is immediately made aware of any heat strokes or anyone that faints from the heat. I would also make sure to get the overheated person into a cool area with shade.",
       "score": {
         "label": "neutral",
         "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "educated as to what is expected each and every day. Produce managers, full and part time"
+        "citation": "The Superintendent/Supervisor must ensure personal factors that contribute to heat related illness are"
       }
     }
   ]

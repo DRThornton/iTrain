@@ -1,5 +1,6 @@
 from app.tools.scenarios import (
     build_section_blocks,
+    build_block_prompt,
     build_follow_up_scenario,
     build_initial_scenarios,
     build_policy_specific_prompt,
@@ -24,7 +25,7 @@ def test_build_initial_scenarios_uses_policy_terms_for_equipment_prompt():
     prompts = " ".join(item["prompt"].lower() for item in scenarios)
 
     assert "what should you do" in prompts or "what action should you take" in prompts
-    assert "you find a sharp tool" in prompts or "you run into a situation involving" in prompts or "you are about to" in prompts or "you notice" in prompts
+    assert "you find a sharp tool" in prompts or "you are about to" in prompts or "you notice" in prompts
     assert "customer" not in prompts
 
 
@@ -101,6 +102,18 @@ def test_build_policy_specific_prompt_creates_actionable_policy_scenario():
     assert "what should you do next before making a decision" in lowered
 
 
+def test_build_block_prompt_uses_section_context_for_heat_illness():
+    prompt = build_block_prompt(
+        "HEAT ILLNESS PREVENTION PROGRAM",
+        "Physical factors that can contribute to heat related illness shall be taken into consideration before work begins.",
+        "safety",
+    )
+
+    lowered = prompt.lower()
+    assert "heat-related illness" in lowered
+    assert "what immediate action should you take" in lowered
+
+
 def test_scenario_worthiness_penalizes_admin_or_posting_rules():
     annual_summary = "The annual summary must be posted no later than February 1st of the year following the year covered"
     unsafe_conditions = "Every employee has a personal responsibility to adhere to safety rules and report unsafe conditions"
@@ -123,6 +136,23 @@ def test_extract_policies_skips_admin_rules_from_large_manual_style_text():
     assert "annual summary" not in policy_text
     assert "trained rescue team or service" not in policy_text
     assert "report unsafe conditions" in policy_text
+
+
+def test_extract_policies_prefers_section_based_worker_actions():
+    handbook_text = """
+    INTRODUCTION
+    This manual explains the safety program.
+    HEAT ILLNESS PREVENTION PROGRAM
+    Physical factors that can contribute to heat related illness shall be taken into consideration before work begins.
+    INCIDENT INVESTIGATION AND REPORTING PROGRAM
+    Immediately report all accidents, incidents, near misses, property damage, and potentially unsafe conditions.
+    """
+
+    policies = extract_policies(handbook_text)
+
+    assert policies
+    assert any(item["heading"] == "HEAT ILLNESS PREVENTION PROGRAM" for item in policies)
+    assert any(item["heading"] == "INCIDENT INVESTIGATION AND REPORTING PROGRAM" for item in policies)
 
 
 def test_split_into_candidate_lines_merges_continuation_lines():

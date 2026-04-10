@@ -158,6 +158,26 @@ SECTION_NEGATIVE_PATTERNS = [
 ]
 
 
+SECTION_POSITIVE_PATTERNS = [
+    r"\bhousekeeping\b",
+    r"\breporting\b",
+    r"\bincident\b",
+    r"\binjury\b",
+    r"\bheat illness\b",
+    r"\bspill\b",
+    r"\bvehicle\b",
+    r"\bequipment\b",
+    r"\bladder\b",
+    r"\btools?\b",
+    r"\bfall protection\b",
+    r"\belectrical\b",
+    r"\bemergency\b",
+    r"\bprotective equipment\b",
+    r"\bppe\b",
+    r"\bhazard\b",
+]
+
+
 def is_noise_line(line: str) -> bool:
     l = line.strip()
 
@@ -260,6 +280,139 @@ def extract_candidate_statements(handbook_text: str):
             candidates.append({"policy": line, "heading": heading})
 
     return candidates
+
+
+def classify_section(heading: str, lines) -> str:
+    section_text = f"{heading} {' '.join(lines[:8])}"
+    return classify_policy(section_text)
+
+
+def score_policy_line(line: str, heading: str = "") -> int:
+    category = classify_policy(f"{heading} {line}")
+    score = scenario_worthiness_score(line, category, heading=heading)
+    lower = line.lower()
+
+    if any(
+        w in lower
+        for w in [
+            "must",
+            "should",
+            "never",
+            "always",
+            "report",
+            "clean",
+            "sanitize",
+            "wear",
+            "follow",
+            "do not",
+            "notify",
+        ]
+    ):
+        score += 2
+
+    if 45 <= len(line) <= 180:
+        score += 1
+
+    return score
+
+
+def select_best_policy_line(lines, heading: str):
+    best_line = None
+    best_score = None
+
+    for line in lines:
+        if not looks_like_policy_line(line):
+            continue
+
+        line_score = score_policy_line(line, heading=heading)
+        if best_score is None or line_score > best_score:
+            best_score = line_score
+            best_line = line
+
+    return best_line, best_score or 0
+
+
+def block_scenario_worthiness(heading: str, lines, category: str) -> int:
+    heading_lower = heading.lower()
+    text = " ".join(lines[:10]).lower()
+
+    score = 0
+    score += sum(3 for pattern in SECTION_POSITIVE_PATTERNS if re.search(pattern, heading_lower))
+    score -= sum(5 for pattern in SECTION_NEGATIVE_PATTERNS if re.search(pattern, heading_lower))
+    score += sum(1 for pattern in SCENARIO_POSITIVE_PATTERNS if re.search(pattern, text))
+    score -= sum(2 for pattern in SCENARIO_NEGATIVE_PATTERNS if re.search(pattern, text))
+
+    if any(word in heading_lower for word in ["responsibilities", "purpose", "scope", "commitment"]):
+        score -= 5
+    if any(word in heading_lower for word in ["training", "awareness", "responsibilities"]):
+        score -= 2
+
+    if category in {"safety", "reporting", "equipment", "sanitation", "policy"}:
+        score += 2
+    if category == "general":
+        score -= 2
+    if category == "opening_shift":
+        score -= 3
+    if category == "customer_service":
+        score -= 2
+
+    return score
+
+
+def build_trigger_from_section(heading: str, policy: str, category: str) -> str:
+    heading_lower = heading.lower()
+    policy_lower = normalize_policy_text(policy).lower()
+
+    if "heat illness" in heading_lower or "heat related illness" in policy_lower:
+        return "A crew member begins showing signs of heat-related illness during hot conditions on site"
+    if "housekeeping" in heading_lower or "spill" in policy_lower:
+        return "You notice spilled material and clutter creating a hazard in an active work area"
+    if any(word in heading_lower for word in ["incident", "injury", "reporting"]) or any(
+        word in policy_lower for word in ["accident", "injury", "illness", "near miss"]
+    ):
+        return "An incident or injury occurs on site and you need to respond correctly"
+    if "vehicle" in heading_lower or "seat belt" in policy_lower:
+        return "You are about to operate a company vehicle or powered equipment"
+    if "ladder" in heading_lower:
+        return "You are getting ready to use a ladder and notice something that could make it unsafe"
+    if "fall protection" in heading_lower:
+        return "You are preparing to work where a fall hazard is present"
+    if "electrical" in heading_lower or "lockout" in heading_lower:
+        return "You need to work near electrical equipment or machinery that could be hazardous"
+    if "ppe" in heading_lower or "protective equipment" in heading_lower:
+        return "You are assigned a task that requires the correct protective equipment"
+    if any(word in heading_lower for word in ["equipment", "tools", "crane", "lift"]):
+        return "You are about to use equipment or tools and notice a potential safety problem"
+    if any(word in policy_lower for word in ["unsafe conditions", "unsafe condition", "hazards"]):
+        return "You notice an unsafe condition in the work area"
+
+    return sentence_case(extract_trigger_text(policy))
+
+
+def build_block_prompt(heading: str, policy: str, category: str) -> str:
+    trigger = build_trigger_from_section(heading, policy, category)
+    escalation = extract_escalation_text(policy)
+
+    if category == "sanitation":
+        return f"{trigger}. What should you do first to control the hazard and keep the area safe?"
+    if category == "safety":
+        question = f"{trigger}. What immediate action should you take?"
+        if escalation:
+            question += f" When would you {escalation}?"
+        else:
+            question += " Who should be notified?"
+        return question
+    if category == "reporting":
+        return f"{trigger}. Who needs to be informed, and what details should you report?"
+    if category == "policy":
+        return f"{trigger}. You are not fully sure what the rule allows. What should you do before moving forward?"
+    if category == "equipment":
+        return f"{trigger}. What should you do right away to keep yourself and others safe?"
+    if category == "opening_shift":
+        return f"{trigger}. What needs to be handled before work continues?"
+    if category == "customer_service":
+        return f"{trigger}. How would you handle the situation without guessing or creating more risk?"
+    return f"{trigger}. Based on company procedure, what should you do first?"
 
 
 def is_new_statement(line: str) -> bool:
@@ -382,7 +535,7 @@ def looks_like_policy_line(line: str) -> bool:
     if re.search(r"\b(fi\s+rst|depart\s+ment)\b", lower):
         return False
 
-    if re.search(r"\b(and|or|to|a|an|the)\s*$", lower):
+    if re.search(r"\b(and|or|to|a|an|the|are|is|be|been|being|for|with|of)\s*$", lower):
         return False
 
     if ":" in normalized and len(normalized.split(":")[-1].strip().split()) < 4:
@@ -412,6 +565,8 @@ def looks_like_policy_line(line: str) -> bool:
         return False
 
     if any(phrase in lower for phrase in ["name badge visible", "clean apron indicates"]):
+        return False
+    if lower.startswith(("the superintendent/supervisor must ensure", "each supervisor must receive training")):
         return False
 
     return True
@@ -447,52 +602,24 @@ def scenario_worthiness_score(line: str, category: str, heading: str = "") -> in
 
 
 def extract_policies(handbook_text: str):
-    candidates = extract_candidate_statements(handbook_text)
-
     scored = []
-    for candidate in candidates:
-        line = candidate["policy"]
-        heading = candidate["heading"]
-        context_text = f"{heading} {line}"
-
-        if not looks_like_policy_line(line):
+    for block in build_section_blocks(handbook_text):
+        heading = block["heading"]
+        heading_lower = heading.lower()
+        if any(re.search(pattern, heading_lower) for pattern in SECTION_NEGATIVE_PATTERNS):
             continue
 
-        category = classify_policy(context_text)
-        scenario_score = scenario_worthiness_score(line, category, heading=heading)
-        if scenario_score < 1:
+        category = classify_section(heading, block["lines"])
+        policy_line, line_score = select_best_policy_line(block["lines"], heading)
+        if not policy_line:
             continue
 
-        score = 0
-        lower = line.lower()
+        block_score = block_scenario_worthiness(heading, block["lines"], category)
+        total_score = line_score + block_score
+        if total_score < 4:
+            continue
 
-        if any(
-            w in lower
-            for w in [
-                "must",
-                "should",
-                "never",
-                "always",
-                "report",
-                "clean",
-                "sanitize",
-                "wear",
-                "follow",
-                "do not",
-                "notify",
-            ]
-        ):
-            score += 2
-
-        if category != "general":
-            score += 2
-
-        if 45 <= len(line) <= 180:
-            score += 1
-
-        score += scenario_score
-
-        scored.append((score, line, category, heading))
+        scored.append((total_score, policy_line, category, heading))
 
     scored.sort(key=lambda x: x[0], reverse=True)
 
@@ -500,9 +627,17 @@ def extract_policies(handbook_text: str):
     seen = set()
 
     for score, line, category, heading in scored:
-        key = (category, line.lower())
+        key = (heading.lower(), category)
         if key not in seen:
-            chosen.append({"policy": line, "category": category, "heading": heading})
+            chosen.append(
+                {
+                    "policy": line,
+                    "category": category,
+                    "heading": heading,
+                    "score": score,
+                    "prompt": build_block_prompt(heading, line, category),
+                }
+            )
             seen.add(key)
 
     return chosen
@@ -687,12 +822,13 @@ def build_structured_rule(policy: str, category: str) -> dict:
     }
 
 
-def build_policy_specific_prompt(policy: str, category: str) -> str:
+def build_policy_specific_prompt(policy: str, category: str, heading: str = "") -> str:
+    if heading:
+        return build_block_prompt(heading, policy, category)
+
     rule = build_structured_rule(policy, category)
     trigger = sentence_case(rule["trigger"])
-    action = rule["action"]
     escalation = rule["escalation"]
-    focus = join_terms(rule["focus_terms"][:2])
 
     if category == "customer_service":
         return (
@@ -743,39 +879,30 @@ def build_policy_specific_prompt(policy: str, category: str) -> str:
     )
 
 
-def build_initial_scenarios(policies):
-    preferred_categories = [
-        "opening_shift",
-        "customer_service",
-        "safety",
-        "reporting",
-        "policy",
-        "equipment",
-        "sanitation",
-        "general",
-    ]
-
+def build_initial_scenarios(policies, max_scenarios: int = 5):
     scenarios = []
     used_categories = set()
     next_id = 1
 
-    for category in preferred_categories:
-        for item in policies:
-            if item["category"] == category and category not in used_categories:
-                scenarios.append(
-                    {
-                        "id": next_id,
-                        "kind": "scenario",
-                        "category": item["category"],
-                        "policy": item["policy"],
-                        "prompt": build_policy_specific_prompt(item["policy"], item["category"]),
-                    }
-                )
-                used_categories.add(category)
-                next_id += 1
-                break
+    for item in policies:
+        if item["category"] in used_categories and len(used_categories) < 3:
+            continue
 
-        if len(scenarios) >= 3:
+        scenarios.append(
+            {
+                "id": next_id,
+                "kind": "scenario",
+                "category": item["category"],
+                "policy": item["policy"],
+                "heading": item.get("heading"),
+                "prompt": item.get("prompt")
+                or build_policy_specific_prompt(item["policy"], item["category"], heading=item.get("heading", "")),
+            }
+        )
+        used_categories.add(item["category"])
+        next_id += 1
+
+        if len(scenarios) >= max_scenarios:
             break
 
     if not scenarios:
@@ -786,6 +913,7 @@ def build_initial_scenarios(policies):
                 "kind": "scenario",
                 "category": "general",
                 "policy": fallback_policy,
+                "heading": "General",
                 "prompt": build_policy_specific_prompt(fallback_policy, "general"),
             }
         )

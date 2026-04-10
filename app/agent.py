@@ -12,7 +12,7 @@ class TrainingAgent:
 
     def start_session(self, handbook_text: str):
         policies = extract_policies(handbook_text)
-        scenarios = build_initial_scenarios(policies)
+        scenarios = build_initial_scenarios(policies, max_scenarios=self.max_turns)
         current = scenarios[0] if scenarios else None
 
         return {
@@ -23,6 +23,9 @@ class TrainingAgent:
             "weak_categories": [],
             "completed": False,
         }
+
+    def _count_primary_turns(self, session) -> int:
+        return sum(1 for item in session.get("history", []) if item.get("kind", "scenario") != "follow_up")
 
     def submit_response(self, session, learner_name: str, response: str):
         if session.get("completed") or session.get("current") is None:
@@ -45,18 +48,19 @@ class TrainingAgent:
         if score["label"] != "good" and scenario["category"] not in session["weak_categories"]:
             session["weak_categories"].append(scenario["category"])
 
-        remaining_turns = self.max_turns - len(session["history"])
+        primary_turns_completed = self._count_primary_turns(session)
+        remaining_primary_turns = self.max_turns - primary_turns_completed
         should_follow_up = (
             score["label"] != "good"
             and scenario.get("kind") != "follow_up"
-            and remaining_turns > len(session["queue"])
+            and remaining_primary_turns >= 0
         )
 
         if should_follow_up:
             next_id = max(item["scenario_id"] for item in session["history"]) + 1
             session["current"] = build_follow_up_scenario(scenario, next_id)
             message = "The agent wants one follow-up response before moving on."
-        elif session["queue"] and remaining_turns > 0:
+        elif session["queue"] and remaining_primary_turns > 0:
             session["current"] = session["queue"].pop(0)
             message = "The agent selected the next scenario."
         else:

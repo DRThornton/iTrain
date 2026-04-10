@@ -1,54 +1,96 @@
 {
   "learner_name": "Demo User",
-  "completed_at": "2026-04-10T05:25:22.856781Z",
+  "completed_at": "2026-04-10T22:58:03.957063Z",
   "summary": {
-    "good": 2,
-    "neutral": 2,
+    "good": 4,
+    "neutral": 4,
     "bad": 0
   },
-  "recommendation": "review",
+  "weighted_score": 8,
+  "recommendation": "pass",
   "focus_areas": [
-    "reporting"
+    "policy",
+    "safety"
   ],
   "results": [
     {
       "scenario_id": 1,
-      "prompt": "You run into a situation involving physical and factors while getting ready to start work. What needs to be taken care of before you continue with the shift?",
-      "response": "I am confused but i would say that I would take care of the physical factors that are coming up.",
+      "prompt": "You notice spilled material and clutter creating a hazard in an active work area. What immediate action should you take? When would you report any injury, job related illness, spill or damage to any property to their supervisor?",
+      "response": "I clean up the spill and make sure any injury, if it did happen, was reported to the supervisor",
       "score": {
         "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: physical, factors.",
-        "citation": "Physical factors that can contribute to heat related illness shall be taken into consideration before"
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: report, injury, spill.",
+        "citation": "Immediately report any injury, job related illness, spill or damage to any property to their supervisor."
       }
     },
     {
       "scenario_id": 2,
-      "prompt": "You run into a situation involving identify and hazards. What immediate action should you take? When would you report hazards or unsafe conditions to their supervisor?",
-      "response": "i would identify the hazards and report them immediately to a supervisor.",
+      "prompt": "A crew member begins showing signs of heat-related illness during hot conditions on site. You are not fully sure what the rule allows. What should you do before moving forward?",
+      "response": "I would get them to the shade and get them some water. I would let the supervisor know that they are feeling unwell.",
       "score": {
-        "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: identify, report, hazards.",
-        "citation": "\u2022 Identify and report hazards or unsafe conditions to their supervisor."
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "persons will monitor bottled water supply every 30 minutes, and employees are encouraged to report to supervisor/designated person low levels or dirty water."
       }
     },
     {
       "scenario_id": 3,
-      "prompt": "You run into a situation involving superintendent and ensure. What should you do first, and what details would you communicate?",
-      "response": "I would involve the superintendent and ensure that they are made aware of what is happening.",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"persons will monitor bottled water supply every 30 minutes, and employees are encouraged to report to supervisor/designated person low levels or dirty water\". How would you verify the correct policy before acting, and what would you tell the customer or coworker in the meantime?",
+      "response": "I would make sure they drink water every 30 minutes and make sure there is clean water on site to drink.",
       "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "The Superintendent/Supervisor must ensure personal factors that contribute to heat related illness are"
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: water, every, minutes.",
+        "citation": "persons will monitor bottled water supply every 30 minutes, and employees are encouraged to report to supervisor/designated person low levels or dirty water."
+      }
+    },
+    {
+      "scenario_id": 3,
+      "prompt": "The qualified person determines that a deficiency is a safety hazard. What should you do right away to keep yourself and others safe?",
+      "response": "I would remove the safety hazard from the area.",
+      "score": {
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: safety, hazard.",
+        "citation": "If the Qualified Person determines that a deficiency is a safety hazard, the equipment must be taken out"
       }
     },
     {
       "scenario_id": 4,
-      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"The Superintendent/Supervisor must ensure personal factors that contribute to heat related illness are\". Who should be informed, and what details would you communicate so the issue is handled correctly?",
-      "response": "I would make sure the supervisor is immediately made aware of any heat strokes or anyone that faints from the heat. I would also make sure to get the overheated person into a cool area with shade.",
+      "prompt": "You run into a situation involving sdss and obtained. What immediate action should you take? Who should be notified?",
+      "response": "Safety Data Sheets should stay on the work site premesis for all to see in case of potential hazards.",
       "score": {
         "label": "neutral",
         "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "The Superintendent/Supervisor must ensure personal factors that contribute to heat related illness are"
+        "citation": "SDSs must be obtained for each required chemical from the chemical manufacturer, supplier or vendor. The purchasing of any potentially hazardous chemical products from any supplier that does"
+      }
+    },
+    {
+      "scenario_id": 5,
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"SDSs must be obtained for each required chemical from the chemical manufacturer, supplier or vendor. The purchasing of any potentially hazardous chemical products from any supplier that does\". What immediate action would reduce the safety risk, and when would you escalate it?",
+      "response": "The SDS has listed what is needed for immediate treatment and such facilities must be accomdated for employees on the work site.",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "SDSs must be obtained for each required chemical from the chemical manufacturer, supplier or vendor. The purchasing of any potentially hazardous chemical products from any supplier that does"
+      }
+    },
+    {
+      "scenario_id": 5,
+      "prompt": "You are about to operate a company vehicle or powered equipment. What immediate action should you take? Who should be notified?",
+      "response": "I would sign out the company vehicle or equipment with the supervisor and make sure all PPE is worn at all times.",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "\u2022 All operators shall wear a safety seat belt when operating a forklift."
+      }
+    },
+    {
+      "scenario_id": 6,
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"\u2022 All operators shall wear a safety seat belt when operating a forklift\". What immediate action would reduce the safety risk, and when would you escalate it?",
+      "response": "This is what PPE is. So yes I would make sure I am wearing a safety seat belt when in a forklift.",
+      "score": {
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: safety, forklift.",
+        "citation": "\u2022 All operators shall wear a safety seat belt when operating a forklift."
       }
     }
   ]

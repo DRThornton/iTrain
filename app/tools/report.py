@@ -10,16 +10,19 @@ def build_manager_report(results, learner_name="Anonymous", focus_areas=None):
         "bad": sum(1 for r in results if r["score"]["label"] == "bad"),
     }
 
-    recommendation = "pass"
-    if summary["bad"] >= 1 or summary["neutral"] >= 2:
-        recommendation = "review"
-    if summary["bad"] >= 2:
+    weighted_score = (summary["good"] * 2) + (summary["neutral"] * 0) + (summary["bad"] * -3)
+
+    recommendation = "review"
+    if weighted_score >= 4:
+        recommendation = "pass"
+    elif weighted_score < 0:
         recommendation = "fail"
 
     report = {
         "learner_name": learner_name,
         "completed_at": datetime.utcnow().isoformat() + "Z",
         "summary": summary,
+        "weighted_score": weighted_score,
         "recommendation": recommendation,
         "focus_areas": focus_areas or [],
         "results": results,

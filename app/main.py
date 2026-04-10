@@ -70,8 +70,9 @@ with tabs[0]:
     else:
         history = session.get("history", [])
         current = session.get("current")
+        completed_primary_turns = sum(1 for item in history if item.get("kind", "scenario") != "follow_up")
 
-        st.write(f"Completed turns: **{len(history)}**")
+        st.write(f"Completed questions: **{completed_primary_turns} / 5**")
 
         if st.session_state.last_feedback is not None:
             feedback = st.session_state.last_feedback

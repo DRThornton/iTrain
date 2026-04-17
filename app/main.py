@@ -88,6 +88,8 @@ with tabs[0]:
             if current.get("kind") == "follow_up":
                 st.info("The agent requested a follow-up before advancing.")
             st.write(current["prompt"])
+            if current.get("kind") != "follow_up" and current.get("hint"):
+                st.caption(current["hint"])
 
             answer = st.text_area("Your response", key=f"answer_{current['id']}", height=140)
 

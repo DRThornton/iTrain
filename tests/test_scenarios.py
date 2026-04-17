@@ -29,6 +29,20 @@ def test_build_initial_scenarios_uses_policy_terms_for_equipment_prompt():
     assert "customer" not in prompts
 
 
+def test_build_initial_scenarios_include_one_line_handbook_hint():
+    handbook_text = """
+    Employees must clean spills immediately or block the area and report the hazard.
+    """
+
+    policies = extract_policies(handbook_text)
+    scenarios = build_initial_scenarios(policies)
+
+    assert scenarios
+    assert scenarios[0]["hint"].startswith("Handbook cue:")
+    assert "clean spills immediately" not in scenarios[0]["hint"].lower()
+    assert "controlling the hazard" in scenarios[0]["hint"].lower()
+
+
 def test_build_follow_up_scenario_references_policy_text():
     scenario = {
         "id": 1,
@@ -155,6 +169,34 @@ def test_extract_policies_prefers_section_based_worker_actions():
     assert any(item["heading"] == "INCIDENT INVESTIGATION AND REPORTING PROGRAM" for item in policies)
 
 
+def test_extract_policies_prefers_selected_line_category_over_broad_section_heading():
+    handbook_text = """
+    INCIDENT INVESTIGATION AND REPORTING PROGRAM
+    Limb and body protection must be worn and equipment designed to protect employees from injury to their limbs and body must be used.
+    """
+
+    policies = extract_policies(handbook_text)
+
+    assert policies
+    assert policies[0]["category"] == "equipment"
+    assert "protective equipment" in policies[0]["prompt"].lower()
+
+
+def test_extract_policies_uses_policy_text_before_heading_for_equipment_prompts():
+    handbook_text = """
+    VEHICLE SAFETY PROGRAM
+    Tools or equipment must be tagged "OUT OF SERVICE", and the damage must be reported before use.
+    """
+
+    policies = extract_policies(handbook_text)
+    scenarios = build_initial_scenarios(policies)
+
+    assert scenarios
+    prompt = scenarios[0]["prompt"].lower()
+    assert "equipment or tools" in prompt
+    assert "company vehicle" not in prompt
+
+
 def test_split_into_candidate_lines_merges_continuation_lines():
     handbook_text = """
     Perform only work they are qualified and trained to do. Notify the supervisor if unqualified for
@@ -208,3 +250,22 @@ def test_extract_candidate_statements_skips_intro_sections():
 
     assert "safety is important to our company" not in joined
     assert "report spills immediately" in joined
+
+
+def test_looks_like_policy_line_rejects_inline_numbered_pdf_fragments():
+    assert not looks_like_policy_line(
+        "2 - Document the equipment inspection before use on each shift 12 - Vehicles must have service & parking brakes, brake lights"
+    )
+
+
+def test_extract_policies_skips_return_to_work_admin_fragments():
+    handbook_text = """
+    Report an employee's return to work to the applicable workers.
+    Employees must clean spills immediately or block the area and report the hazard.
+    """
+
+    policies = extract_policies(handbook_text)
+    policy_text = " ".join(item["policy"].lower() for item in policies)
+
+    assert "return to work" not in policy_text
+    assert "clean spills immediately" in policy_text

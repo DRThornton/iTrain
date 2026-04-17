@@ -17,6 +17,7 @@ def test_build_manager_report_passes_on_strong_good_results():
 
     assert report["weighted_score"] == 4
     assert report["recommendation"] == "pass"
+    assert report["completed_at"].endswith("Z")
 
 
 def test_build_manager_report_reviews_borderline_results():

@@ -101,6 +101,15 @@ NARRATIVE_FRAGMENT_PATTERNS = [
 ]
 
 
+ADMIN_FRAGMENT_PATTERNS = [
+    r"\breturn to work\b",
+    r"\bworkers?\s+comp(?:ensation)?\b",
+    r"\bmodified duty\b",
+    r"\blost time\b",
+    r"\bapplicable workers\b",
+]
+
+
 SCENARIO_POSITIVE_PATTERNS = [
     r"\bunsafe condition",
     r"\bunsafe conditions",
@@ -182,6 +191,10 @@ def is_noise_line(line: str) -> bool:
     l = line.strip()
 
     if len(l) < 25:
+        if is_heading_line(l):
+            return False
+        if any(re.search(pattern, l.lower()) for pattern in POLICY_SIGNAL_PATTERNS):
+            return False
         return True
 
     if "........" in l:
@@ -229,6 +242,8 @@ def is_heading_line(line: str) -> bool:
     if not alpha_words:
         return False
 
+    heading_joiners = {"and", "as", "at", "by", "for", "from", "in", "of", "on", "the", "to", "with"}
+
     upper_words = [
         word
         for word in alpha_words
@@ -240,6 +255,19 @@ def is_heading_line(line: str) -> bool:
         return True
 
     if len(alpha_words) <= 8 and len(title_words) == len(alpha_words) and not stripped.endswith("."):
+        return True
+
+    normalized_words = [re.sub(r"[^A-Za-z]", "", word) for word in alpha_words]
+    significant_words = [word for word in normalized_words if word and word.lower() not in heading_joiners]
+    titled_significant_words = [
+        word for word in alpha_words if re.sub(r"[^A-Za-z]", "", word).lower() not in heading_joiners and word[:1].isupper()
+    ]
+    if (
+        len(alpha_words) <= 8
+        and significant_words
+        and len(titled_significant_words) == len(significant_words)
+        and not stripped.endswith(".")
+    ):
         return True
 
     return False
@@ -363,15 +391,26 @@ def build_trigger_from_section(heading: str, policy: str, category: str) -> str:
     heading_lower = heading.lower()
     policy_lower = normalize_policy_text(policy).lower()
 
-    if "heat illness" in heading_lower or "heat related illness" in policy_lower:
+    if "heat related illness" in policy_lower or "heat illness" in heading_lower:
         return "A crew member begins showing signs of heat-related illness during hot conditions on site"
-    if "housekeeping" in heading_lower or "spill" in policy_lower:
-        return "You notice spilled material and clutter creating a hazard in an active work area"
-    if any(word in heading_lower for word in ["incident", "injury", "reporting"]) or any(
-        word in policy_lower for word in ["accident", "injury", "illness", "near miss"]
+    if any(word in policy_lower for word in ["ppe", "protective equipment", "body protection", "limb protection"]):
+        return "You are assigned a task that requires the correct protective equipment"
+    if any(
+        phrase in policy_lower
+        for phrase in ["out of service", "tagged", "damaged equipment", "damaged tool", "damaged tools"]
     ):
+        return "You are about to use equipment or tools and notice a potential safety problem"
+    if "vehicle" in policy_lower or "seat belt" in policy_lower:
+        return "You are about to operate a company vehicle or powered equipment"
+    if any(word in policy_lower for word in ["equipment", "tool", "tools", "machine", "ladder"]):
+        return "You are about to use equipment or tools and notice a potential safety problem"
+    if any(word in policy_lower for word in ["accident", "injury", "illness", "near miss"]):
         return "An incident or injury occurs on site and you need to respond correctly"
-    if "vehicle" in heading_lower or "seat belt" in policy_lower:
+    if "spill" in policy_lower or "housekeeping" in heading_lower:
+        return "You notice spilled material and clutter creating a hazard in an active work area"
+    if any(word in heading_lower for word in ["incident", "injury", "reporting"]):
+        return "An incident or injury occurs on site and you need to respond correctly"
+    if "vehicle" in heading_lower:
         return "You are about to operate a company vehicle or powered equipment"
     if "ladder" in heading_lower:
         return "You are getting ready to use a ladder and notice something that could make it unsafe"
@@ -502,24 +541,40 @@ def merge_candidate_lines(lines):
 def classify_policy(text: str) -> str:
     l = text.lower()
 
+    if any(word in l for word in ["ppe", "protective equipment", "body protection", "limb protection"]):
+        return "equipment"
     if any(word in l for word in ["wash", "sanitize", "clean", "hygiene", "gloves"]):
         return "sanitation"
     if any(word in l for word in ["customer", "guest"]) or (
         "help" in l and any(word in l for word in ["customer", "guest", "public", "client"])
     ):
         return "customer_service"
-    if any(word in l for word in ["spill", "hazard", "safe", "safety", "injury", "emergenc"]):
-        return "safety"
     if any(word in l for word in ["refund", "policy", "return", "procedure"]):
         return "policy"
     if any(word in l for word in ["equipment", "knife", "box cutter", "tool", "ladder", "machine", "slicer"]):
         return "equipment"
-    if any(word in l for word in ["manager", "supervisor", "report", "notify", "document", "escalat"]):
+    if any(word in l for word in ["manager", "supervisor", "notify", "document", "escalat"]):
         return "reporting"
+    if any(phrase in l for phrase in ["accident", "incidents", "incident", "near miss", "near misses"]):
+        return "reporting"
+    if any(word in l for word in ["spill", "hazard", "safe", "safety", "injury", "emergenc"]):
+        return "safety"
     if any(word in l for word in ["clock in", "uniform", "late", "ready for work", "opening", "before work", "start of shift"]):
         return "opening_shift"
 
     return "general"
+
+
+def select_policy_category(policy: str, heading: str, block_category: str) -> str:
+    policy_category = classify_policy(policy)
+    if policy_category != "general":
+        return policy_category
+
+    combined_category = classify_policy(f"{policy} {heading}")
+    if combined_category != "general":
+        return combined_category
+
+    return block_category
 
 
 def looks_like_policy_line(line: str) -> bool:
@@ -532,7 +587,14 @@ def looks_like_policy_line(line: str) -> bool:
     if any(re.search(pattern, lower) for pattern in NARRATIVE_FRAGMENT_PATTERNS):
         return False
 
+    if any(re.search(pattern, lower) for pattern in ADMIN_FRAGMENT_PATTERNS):
+        return False
+
     if re.search(r"\b(fi\s+rst|depart\s+ment)\b", lower):
+        return False
+
+    # Reject merged PDF fragments that splice numbered checklist items into one line.
+    if re.search(r"\b\d+\s*-\s*[a-z]", lower):
         return False
 
     if re.search(r"\b(and|or|to|a|an|the|are|is|be|been|being|for|with|of)\s*$", lower):
@@ -609,17 +671,29 @@ def extract_policies(handbook_text: str):
         if any(re.search(pattern, heading_lower) for pattern in SECTION_NEGATIVE_PATTERNS):
             continue
 
-        category = classify_section(heading, block["lines"])
-        policy_line, line_score = select_best_policy_line(block["lines"], heading)
-        if not policy_line:
+        block_category = classify_section(heading, block["lines"])
+        best_lines_by_category = {}
+
+        for line in block["lines"]:
+            if not looks_like_policy_line(line):
+                continue
+
+            category = select_policy_category(line, heading, block_category)
+            line_score = score_policy_line(line, heading=heading)
+            existing = best_lines_by_category.get(category)
+            if existing is None or line_score > existing[1]:
+                best_lines_by_category[category] = (line, line_score)
+
+        if not best_lines_by_category:
             continue
 
-        block_score = block_scenario_worthiness(heading, block["lines"], category)
-        total_score = line_score + block_score
-        if total_score < 4:
-            continue
+        for category, (policy_line, line_score) in best_lines_by_category.items():
+            block_score = 0 if heading == "General" else block_scenario_worthiness(heading, block["lines"], category)
+            total_score = line_score + block_score
+            if total_score < 4:
+                continue
 
-        scored.append((total_score, policy_line, category, heading))
+            scored.append((total_score, policy_line, category, heading))
 
     scored.sort(key=lambda x: x[0], reverse=True)
 
@@ -636,6 +710,7 @@ def extract_policies(handbook_text: str):
                     "heading": heading,
                     "score": score,
                     "prompt": build_block_prompt(heading, line, category),
+                    "hint": build_policy_hint(line, category),
                 }
             )
             seen.add(key)
@@ -653,6 +728,26 @@ def sentence_case(text: str) -> str:
     if not text:
         return text
     return text[0].upper() + text[1:]
+
+
+def build_policy_hint(policy: str, category: str) -> str:
+    focus_terms = extract_focus_terms(policy, limit=2)
+    focus = join_terms(focus_terms)
+
+    hint_templates = {
+        "sanitation": "Handbook cue: focus on controlling the hazard, cleaning it correctly, and protecting other people nearby.",
+        "safety": "Handbook cue: focus on the first step that reduces risk and when the situation should be escalated.",
+        "reporting": "Handbook cue: focus on who needs to be informed and what key facts should be communicated.",
+        "policy": "Handbook cue: focus on checking the rule before acting instead of improvising.",
+        "equipment": "Handbook cue: focus on safe equipment or PPE use and how you prevent others from being exposed.",
+        "customer_service": "Handbook cue: focus on helping the customer without guessing or creating additional risk.",
+        "opening_shift": "Handbook cue: focus on what must be ready or corrected before work continues.",
+    }
+
+    if category in hint_templates:
+        return hint_templates[category]
+
+    return f"Handbook cue: think about the company procedure for {focus} before you answer."
 
 
 def extract_policy_action(policy: str) -> str:
@@ -895,6 +990,7 @@ def build_initial_scenarios(policies, max_scenarios: int = 5):
                 "category": item["category"],
                 "policy": item["policy"],
                 "heading": item.get("heading"),
+                "hint": item.get("hint"),
                 "prompt": item.get("prompt")
                 or build_policy_specific_prompt(item["policy"], item["category"], heading=item.get("heading", "")),
             }
@@ -914,6 +1010,7 @@ def build_initial_scenarios(policies, max_scenarios: int = 5):
                 "category": "general",
                 "policy": fallback_policy,
                 "heading": "General",
+                "hint": build_policy_hint(fallback_policy, "general"),
                 "prompt": build_policy_specific_prompt(fallback_policy, "general"),
             }
         )

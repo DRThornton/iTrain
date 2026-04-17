@@ -1,96 +1,86 @@
 {
   "learner_name": "Demo User",
-  "completed_at": "2026-04-10T22:58:03.957063Z",
+  "completed_at": "2026-04-17T05:16:37.341176Z",
   "summary": {
     "good": 4,
-    "neutral": 4,
+    "neutral": 3,
     "bad": 0
   },
   "weighted_score": 8,
   "recommendation": "pass",
   "focus_areas": [
-    "policy",
-    "safety"
+    "reporting",
+    "equipment"
   ],
   "results": [
     {
       "scenario_id": 1,
-      "prompt": "You notice spilled material and clutter creating a hazard in an active work area. What immediate action should you take? When would you report any injury, job related illness, spill or damage to any property to their supervisor?",
-      "response": "I clean up the spill and make sure any injury, if it did happen, was reported to the supervisor",
+      "prompt": "You are about to operate a company vehicle or powered equipment. Who needs to be informed, and what details should you report?",
+      "response": "I would make sure to check out the equipment as per SOP and inform my supervisor and personnel around me that I will be using the equipment.",
       "score": {
-        "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: report, injury, spill.",
-        "citation": "Immediately report any injury, job related illness, spill or damage to any property to their supervisor."
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "\u2022 The driver shall report accurately and immediately every accident to a vehicle in his possession."
       }
     },
     {
       "scenario_id": 2,
-      "prompt": "A crew member begins showing signs of heat-related illness during hot conditions on site. You are not fully sure what the rule allows. What should you do before moving forward?",
-      "response": "I would get them to the shade and get them some water. I would let the supervisor know that they are feeling unwell.",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"\u2022 The driver shall report accurately and immediately every accident to a vehicle in his possession\". Who should be informed, and what details would you communicate so the issue is handled correctly?",
+      "response": "I would make sure that any accidents are reported to my supervisor.",
       "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "persons will monitor bottled water supply every 30 minutes, and employees are encouraged to report to supervisor/designated person low levels or dirty water."
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: report.",
+        "citation": "\u2022 The driver shall report accurately and immediately every accident to a vehicle in his possession."
+      }
+    },
+    {
+      "scenario_id": 2,
+      "prompt": "You are about to use equipment or tools and notice a potential safety problem. What should you do right away to keep yourself and others safe?",
+      "response": "I would mark off the area, label any tool that are safety issues, and notify my supervisor.",
+      "score": {
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: report.",
+        "citation": "\u2022 Any accident involving Company personnel or equipment regardless of fault , must be reported"
       }
     },
     {
       "scenario_id": 3,
-      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"persons will monitor bottled water supply every 30 minutes, and employees are encouraged to report to supervisor/designated person low levels or dirty water\". How would you verify the correct policy before acting, and what would you tell the customer or coworker in the meantime?",
-      "response": "I would make sure they drink water every 30 minutes and make sure there is clean water on site to drink.",
+      "prompt": "An incident or injury occurs on site and you need to respond correctly. What immediate action should you take? When would you report shall be given to the person to a member of the safety team responsible for insurance?",
+      "response": "I would notify my supervisor immediately and wait for what else to do.",
       "score": {
         "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: water, every, minutes.",
-        "citation": "persons will monitor bottled water supply every 30 minutes, and employees are encouraged to report to supervisor/designated person low levels or dirty water."
-      }
-    },
-    {
-      "scenario_id": 3,
-      "prompt": "The qualified person determines that a deficiency is a safety hazard. What should you do right away to keep yourself and others safe?",
-      "response": "I would remove the safety hazard from the area.",
-      "score": {
-        "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: safety, hazard.",
-        "citation": "If the Qualified Person determines that a deficiency is a safety hazard, the equipment must be taken out"
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: report.",
+        "citation": "\u2022 The report shall be given to the person to a member of the Safety Team responsible for insurance"
       }
     },
     {
       "scenario_id": 4,
-      "prompt": "You run into a situation involving sdss and obtained. What immediate action should you take? Who should be notified?",
-      "response": "Safety Data Sheets should stay on the work site premesis for all to see in case of potential hazards.",
+      "prompt": "You notice spilled material and clutter creating a hazard in an active work area. What should you do first to control the hazard and keep the area safe?",
+      "response": "I would close off the area to help keep the area safe and look up how to clean it up.",
       "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "SDSs must be obtained for each required chemical from the chemical manufacturer, supplier or vendor. The purchasing of any potentially hazardous chemical products from any supplier that does"
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: cleanup step.",
+        "citation": "17. Housekeeping. Keep work areas clean and organized. Store waste properly and report spills"
       }
     },
     {
       "scenario_id": 5,
-      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"SDSs must be obtained for each required chemical from the chemical manufacturer, supplier or vendor. The purchasing of any potentially hazardous chemical products from any supplier that does\". What immediate action would reduce the safety risk, and when would you escalate it?",
-      "response": "The SDS has listed what is needed for immediate treatment and such facilities must be accomdated for employees on the work site.",
+      "prompt": "You are about to operate a company vehicle or powered equipment. What should you do right away to keep yourself and others safe?",
+      "response": "I would check out the equipment as per company SOP.",
       "score": {
         "label": "neutral",
         "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "SDSs must be obtained for each required chemical from the chemical manufacturer, supplier or vendor. The purchasing of any potentially hazardous chemical products from any supplier that does"
-      }
-    },
-    {
-      "scenario_id": 5,
-      "prompt": "You are about to operate a company vehicle or powered equipment. What immediate action should you take? Who should be notified?",
-      "response": "I would sign out the company vehicle or equipment with the supervisor and make sure all PPE is worn at all times.",
-      "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "\u2022 All operators shall wear a safety seat belt when operating a forklift."
+        "citation": "15. All vehicles in use shall be checked at the beginning of each shift to assure that the following"
       }
     },
     {
       "scenario_id": 6,
-      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"\u2022 All operators shall wear a safety seat belt when operating a forklift\". What immediate action would reduce the safety risk, and when would you escalate it?",
-      "response": "This is what PPE is. So yes I would make sure I am wearing a safety seat belt when in a forklift.",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"All vehicles in use shall be checked at the beginning of each shift to assure that the following\". What would you do with the equipment right away to keep others safe?",
+      "response": "I would make sure it is signed out properly.",
       "score": {
-        "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: safety, forklift.",
-        "citation": "\u2022 All operators shall wear a safety seat belt when operating a forklift."
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "15. All vehicles in use shall be checked at the beginning of each shift to assure that the following"
       }
     }
   ]

@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -20,7 +20,7 @@ def build_manager_report(results, learner_name="Anonymous", focus_areas=None):
 
     report = {
         "learner_name": learner_name,
-        "completed_at": datetime.utcnow().isoformat() + "Z",
+        "completed_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "summary": summary,
         "weighted_score": weighted_score,
         "recommendation": recommendation,

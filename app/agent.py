@@ -10,13 +10,15 @@ class TrainingAgent:
         self.rubric = rubric
         self.max_turns = max_turns
 
-    def start_session(self, handbook_text: str):
+    def start_session(self, handbook_text: str, manual_names=None):
         policies = extract_policies(handbook_text)
         scenarios = build_initial_scenarios(policies, max_scenarios=self.max_turns)
         current = scenarios[0] if scenarios else None
 
         return {
+            "manual_names": manual_names or [],
             "policies": policies[:10],
+            "total_primary_turns": len(scenarios),
             "queue": scenarios[1:],
             "current": current,
             "history": [],
@@ -49,7 +51,8 @@ class TrainingAgent:
             session["weak_categories"].append(scenario["category"])
 
         primary_turns_completed = self._count_primary_turns(session)
-        remaining_primary_turns = self.max_turns - primary_turns_completed
+        total_primary_turns = session.get("total_primary_turns", self.max_turns)
+        remaining_primary_turns = total_primary_turns - primary_turns_completed
         should_follow_up = (
             score["label"] != "good"
             and scenario.get("kind") != "follow_up"
@@ -85,6 +88,8 @@ class TrainingAgent:
                 results,
                 learner_name=learner_name,
                 focus_areas=session["weak_categories"],
+                manual_names=session.get("manual_names", []),
+                extracted_policy_debug=session.get("policies", []),
             )
             path = save_report(report, reports_dir="app/reports")
             report["saved_to"] = path

@@ -164,3 +164,33 @@ def test_score_response_downgrades_follow_up_policy_copy_paste_with_embedded_num
     )
 
     assert score["label"] == "neutral"
+
+
+def test_score_response_accepts_ground_guide_for_tight_quarters_policy():
+    rubric = {
+        "must_mention_any": ["report to supervisor"],
+        "bad_actions": ["ignore", "guess", "leave it"],
+    }
+
+    score = score_response(
+        "I would make sure I have a ground guide to assist me.",
+        "When an equipment operator must negotiate in tight quarters, provide a second person to ensure safe movement.",
+        rubric,
+    )
+
+    assert score["label"] == "good"
+
+
+def test_score_response_accepts_parking_apart_for_separation_policy():
+    rubric = {
+        "must_mention_any": ["report to supervisor"],
+        "bad_actions": ["ignore", "guess", "leave it"],
+    }
+
+    score = score_response(
+        "I would park them in different spots and keep them separated.",
+        "Separate two similar pieces of equipment; park each at a different spot on site and do not use them at the same time.",
+        rubric,
+    )
+
+    assert score["label"] == "good"

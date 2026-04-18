@@ -1,87 +1,152 @@
 {
   "learner_name": "Demo User",
-  "completed_at": "2026-04-17T05:16:37.341176Z",
+  "completed_at": "2026-04-18T02:07:50.193353Z",
+  "manual_names": [
+    "OSHA4472.pdf"
+  ],
   "summary": {
-    "good": 4,
-    "neutral": 3,
+    "good": 2,
+    "neutral": 6,
     "bad": 0
   },
-  "weighted_score": 8,
+  "weighted_score": 4,
   "recommendation": "pass",
   "focus_areas": [
-    "reporting",
-    "equipment"
+    "equipment",
+    "safety"
   ],
   "results": [
     {
       "scenario_id": 1,
-      "prompt": "You are about to operate a company vehicle or powered equipment. Who needs to be informed, and what details should you report?",
-      "response": "I would make sure to check out the equipment as per SOP and inform my supervisor and personnel around me that I will be using the equipment.",
+      "prompt": "You are preparing to work near equipment with potential arc-flash hazards. What should you do right away to keep yourself and others safe?",
+      "response": "I would insure I am wearing the right PPE clothing.",
       "score": {
         "label": "neutral",
         "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "\u2022 The driver shall report accurately and immediately every accident to a vehicle in his possession."
+        "citation": "Ultimately, arc flashes are less likely to occur when equipment is properly maintained. Having recognized the potential hazards related to arc flashes, employers and workers should assess their likelihood and severity."
       }
     },
     {
       "scenario_id": 2,
-      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"\u2022 The driver shall report accurately and immediately every accident to a vehicle in his possession\". Who should be informed, and what details would you communicate so the issue is handled correctly?",
-      "response": "I would make sure that any accidents are reported to my supervisor.",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"Ultimately, arc flashes are less likely to occur when equipment is properly maintained. Having recognized the potential hazards related to arc flashes, employers and workers should assess their likelihood and severity\". What would you do with the equipment right away to keep others safe?",
+      "response": "I would inspect it to make sure there are no deficiencies in the equipment.",
       "score": {
-        "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: report.",
-        "citation": "\u2022 The driver shall report accurately and immediately every accident to a vehicle in his possession."
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "Ultimately, arc flashes are less likely to occur when equipment is properly maintained. Having recognized the potential hazards related to arc flashes, employers and workers should assess their likelihood and severity."
       }
     },
     {
       "scenario_id": 2,
-      "prompt": "You are about to use equipment or tools and notice a potential safety problem. What should you do right away to keep yourself and others safe?",
-      "response": "I would mark off the area, label any tool that are safety issues, and notify my supervisor.",
+      "prompt": "You notice an unsafe condition in the work area. What immediate action should you take? Who should be notified?",
+      "response": "I would do my best to address the issue.",
       "score": {
-        "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: report.",
-        "citation": "\u2022 Any accident involving Company personnel or equipment regardless of fault , must be reported"
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "Before discussing how to identify and mitigate arc flash hazards, two common myths should be addressed. Many workers mistakenly assume that they do not need arc rated or arc flash rated"
       }
     },
     {
       "scenario_id": 3,
-      "prompt": "An incident or injury occurs on site and you need to respond correctly. What immediate action should you take? When would you report shall be given to the person to a member of the safety team responsible for insurance?",
-      "response": "I would notify my supervisor immediately and wait for what else to do.",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"Before discussing how to identify and mitigate arc flash hazards, two common myths should be addressed. Many workers mistakenly assume that they do not need arc rated or arc flash rated\". What immediate action would reduce the safety risk, and when would you escalate it?",
+      "response": "Every worker needs to have arc rated PPE when in situation like this.",
       "score": {
-        "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: report.",
-        "citation": "\u2022 The report shall be given to the person to a member of the Safety Team responsible for insurance"
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "Before discussing how to identify and mitigate arc flash hazards, two common myths should be addressed. Many workers mistakenly assume that they do not need arc rated or arc flash rated"
+      }
+    },
+    {
+      "scenario_id": 3,
+      "prompt": "You are planning work around an electrical hazard and need controls beyond just PPE. What should you do right away to keep yourself and others safe?",
+      "response": "I would make sure I have the correct arc rated equipment on and that it is up to standard.",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "Employers must not rely solely on PPE alone to control hazards when other effective control options are available. PPE can be effective, but only when workers"
       }
     },
     {
       "scenario_id": 4,
-      "prompt": "You notice spilled material and clutter creating a hazard in an active work area. What should you do first to control the hazard and keep the area safe?",
-      "response": "I would close off the area to help keep the area safe and look up how to clean it up.",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"Employers must not rely solely on PPE alone to control hazards when other effective control options are available. PPE can be effective, but only when workers\". What would you do with the equipment right away to keep others safe?",
+      "response": "It is best to try to mitigate potential risk and shut off systems that do not need to be on.",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "Employers must not rely solely on PPE alone to control hazards when other effective control options are available. PPE can be effective, but only when workers"
+      }
+    },
+    {
+      "scenario_id": 4,
+      "prompt": "You are assigned a task that requires the correct protective equipment. What should you do right away to keep yourself and others safe?",
+      "response": "I would make sure to wear the right PPE.",
       "score": {
         "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: cleanup step.",
-        "citation": "17. Housekeeping. Keep work areas clean and organized. Store waste properly and report spills"
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: protective equipment.",
+        "citation": "The use of administrative controls and PPE require"
       }
     },
     {
       "scenario_id": 5,
-      "prompt": "You are about to operate a company vehicle or powered equipment. What should you do right away to keep yourself and others safe?",
-      "response": "I would check out the equipment as per company SOP.",
+      "prompt": "You are choosing PPE for a task with electrical hazards. What should you do right away to keep yourself and others safe?",
+      "response": "I would wear PPE. that is safe for electrical contact.",
       "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "15. All vehicles in use shall be checked at the beginning of each shift to assure that the following"
-      }
-    },
-    {
-      "scenario_id": 6,
-      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"All vehicles in use shall be checked at the beginning of each shift to assure that the following\". What would you do with the equipment right away to keep others safe?",
-      "response": "I would make sure it is signed out properly.",
-      "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "15. All vehicles in use shall be checked at the beginning of each shift to assure that the following"
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: protective equipment.",
+        "citation": "Employers must select appropriate PPE for their workers"
       }
     }
-  ]
+  ],
+  "debug": {
+    "extracted_policy_debug": [
+      {
+        "policy": "Ultimately, arc flashes are less likely to occur when equipment is properly maintained. Having recognized the potential hazards related to arc flashes, employers and workers should assess their likelihood and severity.",
+        "category": "equipment",
+        "heading": "W Inadequate or insufficient PPE.",
+        "score": 15,
+        "prompt": "You are preparing to work near equipment with potential arc-flash hazards. What should you do right away to keep yourself and others safe?",
+        "hint": "Handbook cue: focus on safe equipment or PPE use and how you prevent others from being exposed."
+      },
+      {
+        "policy": "Employers must not rely solely on PPE alone to control hazards when other effective control options are available. PPE can be effective, but only when workers",
+        "category": "equipment",
+        "heading": "W PPE selection and use",
+        "score": 13,
+        "prompt": "You are planning work around an electrical hazard and need controls beyond just PPE. What should you do right away to keep yourself and others safe?",
+        "hint": "Handbook cue: focus on safe equipment or PPE use and how you prevent others from being exposed."
+      },
+      {
+        "policy": "Before discussing how to identify and mitigate arc flash hazards, two common myths should be addressed. Many workers mistakenly assume that they do not need arc rated or arc flash rated",
+        "category": "safety",
+        "heading": "2 | Protecting Employees from Electric-Arc Flash Hazards",
+        "score": 12,
+        "prompt": "You notice an unsafe condition in the work area. What immediate action should you take? Who should be notified?",
+        "hint": "Handbook cue: focus on the first step that reduces risk and when the situation should be escalated."
+      },
+      {
+        "policy": "Reporting Hazards: Establish a system for workers to report potential arc flash",
+        "category": "safety",
+        "heading": "Concerns",
+        "score": 11,
+        "prompt": "You notice an unsafe condition in the work area. What immediate action should you take? When would you report potential arc flash?",
+        "hint": "Handbook cue: focus on the first step that reduces risk and when the situation should be escalated."
+      },
+      {
+        "policy": "The use of administrative controls and PPE require",
+        "category": "equipment",
+        "heading": "Hazard Prevention and Control",
+        "score": 11,
+        "prompt": "You are assigned a task that requires the correct protective equipment. What should you do right away to keep yourself and others safe?",
+        "hint": "Handbook cue: focus on safe equipment or PPE use and how you prevent others from being exposed."
+      },
+      {
+        "policy": "Employers must select appropriate PPE for their workers",
+        "category": "equipment",
+        "heading": "Standards Association Workplace Electrical Safety",
+        "score": 11,
+        "prompt": "You are choosing PPE for a task with electrical hazards. What should you do right away to keep yourself and others safe?",
+        "hint": "Handbook cue: focus on safe equipment or PPE use and how you prevent others from being exposed."
+      }
+    ]
+  }
 }

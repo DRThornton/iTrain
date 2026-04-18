@@ -7,3 +7,8 @@
 
 py -m streamlit run app/main.py
 
+4\. In the app sidebar:
+
+- Upload a handbook (`.txt` or `.pdf`) for real testing, or
+- explicitly enable `Use bundled sample handbook (demo mode)` if you want to try the built-in sample content.
+

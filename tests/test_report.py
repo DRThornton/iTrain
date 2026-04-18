@@ -36,3 +36,15 @@ def test_build_manager_report_fails_when_bad_outweighs_good():
 
     assert report["weighted_score"] == -1
     assert report["recommendation"] == "fail"
+
+
+def test_build_manager_report_includes_manual_names_and_debug_payload():
+    debug_items = [{"policy": "Report spills immediately.", "category": "safety"}]
+    report = build_manager_report(
+        [make_result("good")],
+        manual_names=["custom_manual.pdf"],
+        extracted_policy_debug=debug_items,
+    )
+
+    assert report["manual_names"] == ["custom_manual.pdf"]
+    assert report["debug"]["extracted_policy_debug"] == debug_items

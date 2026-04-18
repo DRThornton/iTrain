@@ -107,6 +107,49 @@ ADMIN_FRAGMENT_PATTERNS = [
     r"\bmodified duty\b",
     r"\blost time\b",
     r"\bapplicable workers\b",
+    r"\buser will need to\b",
+    r"\busers?[’'] guide\b",
+    r"\buse this report\b",
+    r"\bthis form will always be filled out\b",
+    r"\bnear miss form\b",
+    r"\bincident investigation form\b",
+    r"\bshall be given to\b",
+    r"\bshall initiate hse-\b",
+    r"\bhse-\d",
+    r"\bstep\s+\d+\b",
+    r"\bthe following\b\s*$",
+    r"\breveal evidence of what\b",
+    r"\brequirements must be outlined in detail\b",
+    r"\bsite safety manager should utilize\b",
+    r"\bregarding medications?\b",
+    r"\bchest x-ray\b",
+    r"\bpulmonary function testing\b",
+    r"\belectrocardiogram\b",
+    r"\bpre-employment screening\b",
+    r"\bmedical care\b",
+    r"\bmedical personnel\b",
+    r"\bnon-emergency medical\b",
+    r"\blockers? or closets?\b",
+    r"\btelephone numbers\b",
+    r"\bevacuation route maps\b",
+    r"\bdirect-reading instruments?\b",
+    r"\bselection of respiratory equipment\b",
+    r"\bnote limitations concerning the worker's ability to use protective equipment\b",
+    r"\ba reading of zero should be reported as\b",
+    r"\bhalf masks cover the face\b",
+    r"\bdo not provide eye\b",
+    r"\bbuckets, brushes, clothing, tools, and other contaminated equipment should be collected\b",
+    r"\bwork\s+or\s+work[-\s]related activity\b",
+    r"\bmust be considered work-related\b",
+    r"\bin addition to the required module\b",
+    r"\brequired module\b",
+    r"\bsite safety plan\b",
+    r"\bair-purifying respirators\b",
+    r"\bon the other hand\b",
+    r"\bresponse to spills, leaks, and release of hazardous materials must be set\b",
+    r"\boverhead power lines\b.*\belectrical equipment used\b",
+    r"\bguards must be fully apprised\b",
+    r"\brequires the use of safety signs/tags to warn employees of electrical hazards\b",
 ]
 
 
@@ -189,11 +232,14 @@ SECTION_POSITIVE_PATTERNS = [
 
 def is_noise_line(line: str) -> bool:
     l = line.strip()
+    lower = l.lower()
 
     if len(l) < 25:
         if is_heading_line(l):
             return False
-        if any(re.search(pattern, l.lower()) for pattern in POLICY_SIGNAL_PATTERNS):
+        if any(re.search(pattern, lower) for pattern in POLICY_SIGNAL_PATTERNS):
+            return False
+        if len(l.split()) <= 5 and (lower.startswith(EXPLANATORY_CONTINUATION_STARTS) or (lower[:1].islower() and len(l) >= 4)):
             return False
         return True
 
@@ -203,14 +249,14 @@ def is_noise_line(line: str) -> bool:
     if re.search(r"\b1\.800\.", l):
         return True
 
-    if re.search(r"p\.\s*o\.\s*bo", l.lower()):
+    if re.search(r"p\.\s*o\.\s*bo", lower):
         return True
 
     if sum(c.isdigit() for c in l) > 8:
         return True
 
     for pattern in NOISE_PATTERNS:
-        if re.search(pattern, l.lower()):
+        if re.search(pattern, lower):
             return True
 
     return False
@@ -391,6 +437,62 @@ def build_trigger_from_section(heading: str, policy: str, category: str) -> str:
     heading_lower = heading.lower()
     policy_lower = normalize_policy_text(policy).lower()
 
+    if "under ar ppe" in policy_lower or "wear under ar ppe" in policy_lower:
+        return "You are getting dressed for arc-flash work and need to choose what to wear underneath your AR PPE"
+    if "must not rely solely on ppe" in policy_lower or "not rely solely on ppe alone" in policy_lower:
+        return "You are planning work around an electrical hazard and need controls beyond just PPE"
+    if "select appropriate ppe" in policy_lower:
+        return "You are choosing PPE for a task with electrical hazards"
+    if "arc flashes are less likely to occur when equipment is properly maintained" in policy_lower:
+        return "You are preparing to work near equipment with potential arc-flash hazards"
+    if any(
+        phrase in policy_lower
+        for phrase in ["separate two similar pieces of equipment", "park each at a different spot on site"]
+    ):
+        return "You need to stage or park two similar pieces of equipment in the same work area"
+    if "opening the hatch" in policy_lower:
+        return "You are about to open a hatch on equipment that may expose you to hazardous material"
+    if "disposable outer garments" in policy_lower:
+        return "You are entering an area where contamination is possible"
+    if "decontaminate" in policy_lower and "clean zone" in policy_lower:
+        return "You are about to move equipment from a contaminated area into the clean zone"
+    if any(
+        phrase in policy_lower
+        for phrase in ["spark arrestors", "refuel in safe areas", "do not fuel engines while vehicle is running"]
+    ):
+        return "You are preparing to use or refuel an engine in a hazardous work area"
+    if "ignition keys" in policy_lower:
+        return "You finish using a vehicle or piece of equipment and are about to leave it parked"
+    if "suspected exposures" in policy_lower:
+        return "You believe someone may have been exposed to a hazardous substance on the site"
+    if any(phrase in policy_lower for phrase in ["notify project hse staff", "notify project hse", "problems or concerns"]):
+        return "You notice a problem or concern on the project that needs to be reported"
+    if any(phrase in policy_lower for phrase in ["unsafe acts", "unsafe act", "unsafe conditions", "unsafe condition"]):
+        return "You notice an unsafe act or unsafe condition on the project"
+    if any(phrase in policy_lower for phrase in ["loose items", "loose accessories", "do not wear jewelry"]):
+        return "You are getting ready to work and notice clothing or personal items that could create a hazard"
+    if any(
+        phrase in policy_lower
+        for phrase in ["report all incidents", "report any accident", "report accurately and immediately every accident"]
+    ):
+        return "An incident happens on the project and it needs to be reported correctly"
+    if any(
+        phrase in policy_lower
+        for phrase in ["losses of tools", "incidents of security", "missing tools", "missing equipment"]
+    ):
+        return "You discover missing tools, equipment, materials, or a security issue on the project"
+    if any(
+        phrase in policy_lower
+        for phrase in ["checked at the beginning of each shift", "inspection before use", "inspect before use"]
+    ):
+        return "You are preparing to use a vehicle or piece of equipment at the start of the shift"
+    if any(
+        phrase in policy_lower
+        for phrase in ["unqualified for assigned work", "additional training is needed", "qualified and trained to do"]
+    ):
+        return "You are assigned work that you are not fully qualified or trained to perform"
+    if "visibility is low" in policy_lower:
+        return "You are getting ready to use a vehicle in low-visibility conditions"
     if "heat related illness" in policy_lower or "heat illness" in heading_lower:
         return "A crew member begins showing signs of heat-related illness during hot conditions on site"
     if any(word in policy_lower for word in ["ppe", "protective equipment", "body protection", "limb protection"]):
@@ -472,6 +574,73 @@ def is_new_statement(line: str) -> bool:
     return False
 
 
+EXPLANATORY_CONTINUATION_STARTS = (
+    "and ",
+    "or ",
+    "but ",
+    "to ",
+    "for ",
+    "of ",
+    "with ",
+    "by ",
+    "from ",
+    "if ",
+    "when ",
+    "while ",
+    "where ",
+    "that ",
+    "which ",
+    "who ",
+    "the ",
+    "a ",
+    "an ",
+    "each ",
+    "mesh ",
+    "all mesh ",
+    "guardrail ",
+    "personal ",
+    "warning ",
+    "qualified ",
+    "developed ",
+    "maintained ",
+    "approved ",
+    "available",
+    "copy ",
+    "training must ",
+    "the employer must ",
+    "there may be times ",
+    "for example",
+    "or more by ",
+)
+
+
+def previous_line_needs_continuation(prev_lower: str) -> bool:
+    trimmed_prev = prev_lower.rstrip(" .;,:!?")
+
+    if re.search(r"\b(to|for|of|and|or|the|a|an|if|when|with|your|their|are|is|was|were|be|been)\s*$", prev_lower):
+        return True
+
+    if any(
+        trimmed_prev.endswith(fragment)
+        for fragment in [
+            "importance",
+            "qualified",
+            "6 feet",
+            "safe openings",
+            "training must",
+            "has been trained",
+            "warning line system",
+            "control",
+            "arc",
+            "endanger",
+            "unpredictably",
+        ]
+    ):
+        return True
+
+    return False
+
+
 def should_merge_with_previous(previous: str, current: str) -> bool:
     prev = previous.strip()
     curr = current.strip()
@@ -488,11 +657,13 @@ def should_merge_with_previous(previous: str, current: str) -> bool:
     if is_new_statement(curr):
         return False
 
-    if re.search(r"[.:!?]$", prev) and len(prev.split()) >= 8:
-        return False
+    curr_is_continuation = curr_starts_lower or curr_lower.startswith(EXPLANATORY_CONTINUATION_STARTS)
 
-    if re.search(r"\b(to|for|of|and|or|the|a|an|if|when|with|your|their)\s*$", prev_lower):
-        if curr_starts_lower or curr_lower.startswith(("assigned ", "additional ", "the employee ", "their ", "your ")):
+    if re.search(r"[.:!?]$", prev) and len(prev.split()) >= 8:
+        return previous_line_needs_continuation(prev_lower) and curr_is_continuation
+
+    if previous_line_needs_continuation(prev_lower):
+        if curr_is_continuation or curr_lower.startswith(("assigned ", "additional ", "the employee ", "their ", "your ")):
             return True
         return False
 
@@ -518,10 +689,10 @@ def should_merge_with_previous(previous: str, current: str) -> bool:
             "who ",
         )
     ):
-        return curr_starts_lower
+        return curr_is_continuation
 
     if len(prev.split()) < 8:
-        return curr_starts_lower
+        return curr_is_continuation
 
     return False
 
@@ -541,6 +712,26 @@ def merge_candidate_lines(lines):
 def classify_policy(text: str) -> str:
     l = text.lower()
 
+    if "report unsafe condition" in l or "report unsafe conditions" in l:
+        if any(term in l for term in ["supervisor", "notify", "immediately", "project"]):
+            return "reporting"
+        return "safety"
+    if any(
+        phrase in l
+        for phrase in [
+            "suspected exposures",
+            "unsafe acts",
+            "unsafe act",
+            "notify pcl",
+            "notify project hse",
+            "report all incidents",
+            "report any accident",
+            "report accurately and immediately every accident",
+            "identify and report hazards",
+            "notify your supervisor",
+        ]
+    ):
+        return "reporting"
     if any(word in l for word in ["ppe", "protective equipment", "body protection", "limb protection"]):
         return "equipment"
     if any(word in l for word in ["wash", "sanitize", "clean", "hygiene", "gloves"]):
@@ -551,12 +742,12 @@ def classify_policy(text: str) -> str:
         return "customer_service"
     if any(word in l for word in ["refund", "policy", "return", "procedure"]):
         return "policy"
-    if any(word in l for word in ["equipment", "knife", "box cutter", "tool", "ladder", "machine", "slicer"]):
-        return "equipment"
     if any(word in l for word in ["manager", "supervisor", "notify", "document", "escalat"]):
         return "reporting"
     if any(phrase in l for phrase in ["accident", "incidents", "incident", "near miss", "near misses"]):
         return "reporting"
+    if any(word in l for word in ["equipment", "knife", "box cutter", "tool", "ladder", "machine", "slicer"]):
+        return "equipment"
     if any(word in l for word in ["spill", "hazard", "safe", "safety", "injury", "emergenc"]):
         return "safety"
     if any(word in l for word in ["clock in", "uniform", "late", "ready for work", "opening", "before work", "start of shift"]):
@@ -580,6 +771,7 @@ def select_policy_category(policy: str, heading: str, block_category: str) -> st
 def looks_like_policy_line(line: str) -> bool:
     normalized = normalize_policy_text(line)
     lower = normalized.lower()
+    stripped_lower = re.sub(r"^[\u2022\-]\s*", "", lower)
 
     if len(normalized) < 35 or len(normalized) > 220:
         return False
@@ -588,6 +780,44 @@ def looks_like_policy_line(line: str) -> bool:
         return False
 
     if any(re.search(pattern, lower) for pattern in ADMIN_FRAGMENT_PATTERNS):
+        return False
+
+    if any(
+        phrase in stripped_lower
+        for phrase in [
+            "health, safety, and environment must be taken into consideration when purchasing equipment",
+            "personally owned ppe must be approved by project management prior to use on a project site",
+            "collect environmental/environmental spill facts, must be completed",
+            "documented reports are to be submitted in three days",
+        ]
+    ):
+        return False
+
+    if normalized.count("(") > normalized.count(")"):
+        return False
+
+    # Mid-sentence PDF fragments often start lowercase and lack a clear actor/action opening.
+    if normalized[:1].islower() and not re.match(r"^(?:[•\-]\s*)?(?:if|when|all|employees?|workers?|operators?|supervisors?|site personnel)\b", lower):
+        return False
+
+    if stripped_lower.startswith(
+        (
+            "supervisor and/or",
+            "the supervisor shall",
+            "the qualified person must",
+            "the qualified person shall",
+            "foreman/supervisor",
+            "supervisor ",
+            "guards must be fully apprised",
+            "locate the station in the clean area adjacent",
+            "the ongoing monitoring of atmospheric chemical hazards",
+            "the type of equipment used and the overall level of protection should be reevaluated",
+            "exclusion zone; rather, they should observe site conditions from the clean area",
+        )
+    ):
+        return False
+
+    if stripped_lower.startswith(("avoid loose items", "in addition to the required module")):
         return False
 
     if re.search(r"\b(fi\s+rst|depart\s+ment)\b", lower):
@@ -600,7 +830,57 @@ def looks_like_policy_line(line: str) -> bool:
     if re.search(r"\b(and|or|to|a|an|the|are|is|be|been|being|for|with|of)\s*$", lower):
         return False
 
+    if normalized.endswith(";"):
+        return False
+
     if ":" in normalized and len(normalized.split(":")[-1].strip().split()) < 4:
+        return False
+
+    if any(lower.endswith(fragment) for fragment in ["the following", "filled out in", "outlined in detail", "evidence of what"]):
+        return False
+
+    if re.search(r"(?:,\s*|(?:\bto|\bfor|\bof|\band|\bor)\s+)$", lower):
+        return False
+
+    if any(
+        lower.endswith(fragment)
+        for fragment in [
+            "to your",
+            "the trade",
+            "medical",
+            "servicing",
+            "as soon",
+            "initial",
+            "equipment",
+            "look",
+            "care",
+            "see",
+            "occur",
+            "who",
+            "placed",
+            "protective",
+            "powered",
+            "inadequate",
+            "all",
+            "set",
+            "eye",
+            "because",
+            "his",
+            "hazardous",
+            "walking",
+            "ensure",
+            "same",
+            "motor",
+            "completed",
+            "control",
+            "importance",
+            "unpredictably",
+            "flammable",
+        ]
+    ):
+        return False
+
+    if lower.endswith("equipment used"):
         return False
 
     signal_count = sum(1 for pattern in POLICY_SIGNAL_PATTERNS if re.search(pattern, lower))
@@ -703,13 +983,16 @@ def extract_policies(handbook_text: str):
     for score, line, category, heading in scored:
         key = (heading.lower(), category)
         if key not in seen:
+            prompt = build_best_prompt(heading, line, category)
+            if not prompt:
+                continue
             chosen.append(
                 {
                     "policy": line,
                     "category": category,
                     "heading": heading,
                     "score": score,
-                    "prompt": build_block_prompt(heading, line, category),
+                    "prompt": prompt,
                     "hint": build_policy_hint(line, category),
                 }
             )
@@ -834,11 +1117,55 @@ def join_terms(terms):
     return f"{terms[0]} and {terms[1]}"
 
 
+def tokenize_prompt_words(text: str):
+    return [word for word in re.findall(r"[a-z][a-z0-9\-']+", text.lower()) if len(word) > 3]
+
+
 def extract_trigger_text(policy: str) -> str:
     normalized = normalize_policy_text(policy)
     lower = normalized.lower()
 
     direct_policy_patterns = [
+        (
+            r"under ar ppe|wear under ar ppe",
+            "you are getting dressed for arc-flash work and need to choose what to wear underneath your ar ppe",
+        ),
+        (
+            r"must not rely solely on ppe|not rely solely on ppe alone",
+            "you are planning work around an electrical hazard and need controls beyond just ppe",
+        ),
+        (
+            r"select appropriate ppe",
+            "you are choosing ppe for a task with electrical hazards",
+        ),
+        (
+            r"arc flashes are less likely to occur when equipment is properly maintained",
+            "you are preparing to work near equipment with potential arc-flash hazards",
+        ),
+        (
+            r"separate two similar pieces of equipment|park each at a different spot on site",
+            "you need to stage or park two similar pieces of equipment in the same work area",
+        ),
+        (
+            r"opening the hatch",
+            "you are about to open a hatch on equipment that may expose you to hazardous material",
+        ),
+        (
+            r"disposable outer garments",
+            "you are entering an area where contamination is possible",
+        ),
+        (
+            r"decontaminate.+clean zone",
+            "you are about to move equipment from a contaminated area into the clean zone",
+        ),
+        (
+            r"spark arrestors|refuel in safe areas|do not fuel engines while vehicle is running",
+            "you are preparing to use or refuel an engine in a hazardous work area",
+        ),
+        (
+            r"unqualified for assigned work|additional training is needed|qualified and trained to do",
+            "you are assigned work that you are not fully qualified or trained to perform",
+        ),
         (r"unsafe actions? must be reported", "you notice someone taking an unsafe action in the work area"),
         (r"customer safety over speed", "a customer needs help, but moving too fast could create a safety or service problem"),
     ]
@@ -873,6 +1200,120 @@ def extract_trigger_text(policy: str) -> str:
     focus_terms = extract_focus_terms(policy)
     focus = join_terms(focus_terms[:2])
     return f"you run into a situation involving {focus}"
+
+
+def prompt_specificity_score(prompt: str, policy: str) -> int:
+    lower_prompt = prompt.lower()
+    focus_terms = extract_focus_terms(policy, limit=4)
+    score = 0
+
+    score += sum(2 for term in focus_terms if term in lower_prompt)
+
+    if "you run into a situation involving" in lower_prompt:
+        score -= 6
+    if any(
+        phrase in lower_prompt
+        for phrase in [
+            "you are about to use equipment or tools and notice a potential safety problem",
+            "you are about to operate a company vehicle or powered equipment",
+            "an incident or injury occurs on site and you need to respond correctly",
+        ]
+    ):
+        score -= 2
+
+    if any(
+        phrase in lower_prompt
+        for phrase in [
+            "clean zone",
+            "hatch",
+            "refuel",
+            "park two similar pieces of equipment",
+            "hazardous substance",
+            "unsafe condition",
+            "problem or concern",
+            "low-visibility",
+        ]
+    ):
+        score += 2
+
+    return score
+
+
+def is_usable_prompt(prompt: str) -> bool:
+    lower = prompt.lower()
+
+    if "you run into a situation involving" in lower:
+        return False
+    if prompt.count("(") > prompt.count(")"):
+        return False
+    if re.search(r"\bcontact with\b", lower):
+        return False
+    if re.search(r"\b[a-z]\?$", lower):
+        return False
+
+    return True
+
+
+def prompt_signature(prompt: str) -> str:
+    lower = prompt.lower()
+
+    normalized_patterns = [
+        (
+            r"you are assigned a task that requires the correct protective equipment\..+",
+            "generic_protective_equipment",
+        ),
+        (
+            r"you are about to use equipment or tools and notice a potential safety problem\..+",
+            "generic_equipment_safety",
+        ),
+        (
+            r"you are preparing to work where a fall hazard is present\..+",
+            "generic_fall_hazard",
+        ),
+        (
+            r"you notice an unsafe condition in the work area\..+",
+            "generic_unsafe_condition",
+        ),
+    ]
+
+    for pattern, signature in normalized_patterns:
+        if re.match(pattern, lower):
+            return signature
+
+    normalized = re.sub(r"[^a-z0-9]+", " ", lower)
+    return " ".join(normalized.split())
+
+
+def prompts_are_too_similar(existing_prompt: str, candidate_prompt: str) -> bool:
+    existing_signature = prompt_signature(existing_prompt)
+    candidate_signature = prompt_signature(candidate_prompt)
+
+    if existing_signature == candidate_signature:
+        return True
+
+    existing_words = set(tokenize_prompt_words(existing_signature))
+    candidate_words = set(tokenize_prompt_words(candidate_signature))
+    if not existing_words or not candidate_words:
+        return False
+
+    overlap = len(existing_words & candidate_words) / max(min(len(existing_words), len(candidate_words)), 1)
+    return overlap >= 0.85
+
+
+def build_best_prompt(heading: str, policy: str, category: str) -> str | None:
+    candidates = []
+    heading_prompt = build_block_prompt(heading, policy, category)
+    policy_prompt = build_policy_specific_prompt(policy, category)
+
+    for candidate in [heading_prompt, policy_prompt]:
+        if is_usable_prompt(candidate):
+            candidates.append((prompt_specificity_score(candidate, policy), candidate))
+
+    if not candidates:
+        return None
+
+    candidates.sort(key=lambda item: item[0], reverse=True)
+    return candidates[0][1]
 
 
 def extract_escalation_text(policy: str) -> str | None:
@@ -975,12 +1416,56 @@ def build_policy_specific_prompt(policy: str, category: str, heading: str = "") 
 
 
 def build_initial_scenarios(policies, max_scenarios: int = 5):
+    prepared_items = []
+    for item in policies:
+        prompt = item.get("prompt") or build_best_prompt(item.get("heading", ""), item["policy"], item["category"])
+        if not prompt:
+            continue
+        prepared_items.append({**item, "prompt": prompt})
+
     scenarios = []
     used_categories = set()
+    used_policy_keys = set()
     next_id = 1
 
-    for item in policies:
-        if item["category"] in used_categories and len(used_categories) < 3:
+    def can_add_prompt(candidate_prompt: str) -> bool:
+        return not any(prompts_are_too_similar(existing["prompt"], candidate_prompt) for existing in scenarios)
+
+    for item in prepared_items:
+        if len(used_categories) >= 3:
+            break
+        if item["category"] in used_categories:
+            continue
+        if not can_add_prompt(item["prompt"]):
+            continue
+
+        policy_key = (item["category"], item["policy"])
+        scenarios.append(
+            {
+                "id": next_id,
+                "kind": "scenario",
+                "category": item["category"],
+                "policy": item["policy"],
+                "heading": item.get("heading"),
+                "hint": item.get("hint"),
+                "prompt": item["prompt"],
+            }
+        )
+        used_categories.add(item["category"])
+        used_policy_keys.add(policy_key)
+        next_id += 1
+
+        if len(scenarios) >= max_scenarios:
+            break
+
+    for item in prepared_items:
+        if len(scenarios) >= max_scenarios:
+            break
+
+        policy_key = (item["category"], item["policy"])
+        if policy_key in used_policy_keys:
+            continue
+        if not can_add_prompt(item["prompt"]):
             continue
 
         scenarios.append(
@@ -991,15 +1476,11 @@ def build_initial_scenarios(policies, max_scenarios: int = 5):
                 "policy": item["policy"],
                 "heading": item.get("heading"),
                 "hint": item.get("hint"),
-                "prompt": item.get("prompt")
-                or build_policy_specific_prompt(item["policy"], item["category"], heading=item.get("heading", "")),
+                "prompt": item["prompt"],
             }
         )
-        used_categories.add(item["category"])
+        used_policy_keys.add(policy_key)
         next_id += 1
-
-        if len(scenarios) >= max_scenarios:
-            break
 
     if not scenarios:
         fallback_policy = "Follow company procedures and prioritize safety."

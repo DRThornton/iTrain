@@ -20,6 +20,8 @@ if "report" not in st.session_state:
     st.session_state.report = None
 if "learner_name" not in st.session_state:
     st.session_state.learner_name = "Demo User"
+if "manual_names" not in st.session_state:
+    st.session_state.manual_names = []
 
 
 def load_default_handbook() -> str:
@@ -31,6 +33,7 @@ with st.sidebar:
     st.header("Setup")
     learner_name = st.text_input("Learner name", value=st.session_state.learner_name)
     uploaded_handbook = st.file_uploader("Upload handbook (.txt or .pdf)", type=["txt", "pdf"])
+    use_sample_handbook = st.checkbox("Use bundled sample handbook (demo mode)", value=False)
     rubric_path = "app/data/sample_rubric.json"
     show_debug = st.checkbox("Show extracted policy debug", value=False)
 
@@ -38,19 +41,33 @@ with st.sidebar:
         try:
             if uploaded_handbook is not None:
                 handbook_text = load_handbook(uploaded_handbook)
-            else:
+                manual_names = [uploaded_handbook.name]
+            elif use_sample_handbook:
                 handbook_text = load_default_handbook()
+                manual_names = ["sample_handbook.txt"]
+            else:
+                st.session_state.agent_session = None
+                st.session_state.detected_policies = []
+                st.session_state.last_feedback = None
+                st.session_state.report = None
+                st.session_state.manual_names = []
+                st.error("Upload a handbook to start training, or enable bundled sample handbook demo mode.")
+                st.stop()
 
             rubric = load_rubric(rubric_path)
             agent = TrainingAgent(rubric=rubric, max_turns=5)
-            session = agent.start_session(handbook_text)
+            session = agent.start_session(handbook_text, manual_names=manual_names)
 
             st.session_state.agent_session = session
             st.session_state.detected_policies = session["policies"]
             st.session_state.last_feedback = None
             st.session_state.report = None
             st.session_state.learner_name = learner_name
-            st.success("Training module loaded.")
+            st.session_state.manual_names = manual_names
+            if uploaded_handbook is not None:
+                st.success("Training module loaded from uploaded handbook.")
+            else:
+                st.success("Training module loaded from bundled sample handbook.")
         except Exception as e:
             st.error(f"Error loading handbook: {e}")
 
@@ -71,8 +88,9 @@ with tabs[0]:
         history = session.get("history", [])
         current = session.get("current")
         completed_primary_turns = sum(1 for item in history if item.get("kind", "scenario") != "follow_up")
+        total_primary_turns = session.get("total_primary_turns", 0)
 
-        st.write(f"Completed questions: **{completed_primary_turns} / 5**")
+        st.write(f"Completed questions: **{completed_primary_turns} / {total_primary_turns}**")
 
         if st.session_state.last_feedback is not None:
             feedback = st.session_state.last_feedback
@@ -125,6 +143,8 @@ with tabs[1]:
 
         st.write("### Summary")
         st.json(report["summary"])
+        if report.get("manual_names"):
+            st.write(f"**Manuals used:** {', '.join(report['manual_names'])}")
         st.write(f"**Recommendation:** {report['recommendation']}")
         if report.get("focus_areas"):
             st.write(f"**Focus areas:** {', '.join(report['focus_areas'])}")
@@ -137,3 +157,7 @@ with tabs[1]:
             st.write(f"**Score:** {item['score']['label']}")
             st.write(f"**Rationale:** {item['score']['rationale']}")
             st.write(f"**Handbook citation:** {item['score']['citation']}")
+
+        if report.get("debug", {}).get("extracted_policy_debug"):
+            st.write("### Debug Report")
+            st.json(report["debug"])

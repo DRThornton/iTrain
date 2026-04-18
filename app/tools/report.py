@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 
-def build_manager_report(results, learner_name="Anonymous", focus_areas=None):
+def build_manager_report(results, learner_name="Anonymous", focus_areas=None, manual_names=None, extracted_policy_debug=None):
     summary = {
         "good": sum(1 for r in results if r["score"]["label"] == "good"),
         "neutral": sum(1 for r in results if r["score"]["label"] == "neutral"),
@@ -21,11 +21,15 @@ def build_manager_report(results, learner_name="Anonymous", focus_areas=None):
     report = {
         "learner_name": learner_name,
         "completed_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        "manual_names": manual_names or [],
         "summary": summary,
         "weighted_score": weighted_score,
         "recommendation": recommendation,
         "focus_areas": focus_areas or [],
         "results": results,
+        "debug": {
+            "extracted_policy_debug": extracted_policy_debug or [],
+        },
     }
     return report
 

@@ -37,7 +37,7 @@ def detect_policy_good_matches(response_lower: str, policy_lower: str):
         ),
         (
             ["report", "notify"],
-            ["report", "notify", "tell my supervisor", "tell the supervisor", "escalate"],
+            ["report", "notify", "tell my supervisor", "tell the supervisor", "tell my foreman", "tell the foreman", "escalate"],
             "report",
         ),
         (
@@ -49,6 +49,16 @@ def detect_policy_good_matches(response_lower: str, policy_lower: str):
             ["clean up", "dispose", "spill", "trash"],
             ["clean", "clean up", "dispose", "block off", "block the area"],
             "cleanup step",
+        ),
+        (
+            ["separate two similar pieces of equipment", "park each at a different spot", "do not use them at the same time"],
+            ["different spots", "park them in different spots", "separate them", "park them apart", "do not use them at the same time"],
+            "separate equipment",
+        ),
+        (
+            ["tight quarters", "provide a second person"],
+            ["second person", "spotter", "ground guide", "guide me", "guide me through", "another person"],
+            "second-person guide",
         ),
     ]
 

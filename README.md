@@ -12,3 +12,4 @@ py -m streamlit run app/main.py
 - Upload a handbook (`.txt` or `.pdf`) for real testing, or
 - explicitly enable `Use bundled sample handbook (demo mode)` if you want to try the built-in sample content.
 
+- Note: the docs section includes documents that were used to help build the program and were used as test manuals. The program does not reference these directly. These were placed so I can keep track what was used and tested on at satisfactory level.

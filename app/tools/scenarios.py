@@ -21,6 +21,7 @@ FOLLOW_UP_TEMPLATES = {
     "reporting": "Who should be informed, and what details would you communicate so the issue is handled correctly?",
     "policy": "How would you verify the correct policy before acting, and what would you tell the customer or coworker in the meantime?",
     "equipment": "What would you do with the equipment right away to keep others safe?",
+    "procedure": "At this exact step, what action does the manual want you to take before moving on, and what detail tells you that is the right move?",
     "opening_shift": "How would you make the area ready for work before work begins?",
     "general": "What company procedure would you follow first, and why?",
 }
@@ -230,6 +231,160 @@ SECTION_POSITIVE_PATTERNS = [
 ]
 
 
+MANUAL_DOCUMENT_PATTERNS = [
+    r"\buser(?:'s)? manual\b",
+    r"\binstallation\b",
+    r"\binstall\b",
+    r"\bsetup\b",
+    r"\bconfiguration\b",
+    r"\bthermostat\b",
+    r"\bdisplay\b",
+    r"\bscreen\b",
+    r"\bcalibrat",
+    r"\bwires?\b",
+    r"\bvoltage\b",
+    r"\bmenu\b",
+    r"\bbutton\b",
+    r"\bpress\b",
+    r"\bselect\b",
+    r"\bservice\b",
+    r"\bguide\b",
+]
+
+
+SAFETY_DOCUMENT_PATTERNS = [
+    r"\bsafety\b",
+    r"\bhazard\b",
+    r"\bunsafe\b",
+    r"\binjury\b",
+    r"\bincident\b",
+    r"\bnear miss\b",
+    r"\bspill\b",
+    r"\bhousekeeping\b",
+    r"\bprotective equipment\b",
+    r"\bppe\b",
+    r"\bsupervisor\b",
+    r"\bemergency\b",
+    r"\breport\b",
+    r"\bemployees?\s+must\b",
+]
+
+
+PROCEDURE_PATTERNS = [
+    r"\binstall\b",
+    r"\binstallation\b",
+    r"\bsetup\b",
+    r"\bconfigure\b",
+    r"\bconfiguration\b",
+    r"\bconnect\b",
+    r"\bwires?\b",
+    r"\bdisplay\b",
+    r"\bscreen\b",
+    r"\bthermostat\b",
+    r"\bcalibrat",
+    r"\bpress\b",
+    r"\bselect\b",
+    r"\bmenu\b",
+    r"\bservice\b",
+    r"\bclean the screen\b",
+]
+
+
+PROCEDURE_IMPERATIVE_STARTS = (
+    "assemble",
+    "make sure",
+    "carefully",
+    "turn off",
+    "remove",
+    "loosen",
+    "disconnect",
+    "tape",
+    "mark",
+    "keep",
+    "label",
+    "place",
+    "press",
+    "select",
+    "insert",
+    "export",
+    "import",
+    "connect",
+    "locate",
+    "use",
+)
+
+
+PROCEDURE_GENERIC_PATTERNS = [
+    r"\bfollow these step by step\b",
+    r"\bfollow the directions below\b",
+    r"\bfollow the onscreen instructions\b",
+    r"\bcontinued\b",
+    r"\bsubmenu\b",
+    r"\bmain menu\b",
+    r"\bsettings\b",
+    r"\binformation\b",
+]
+
+
+PROCEDURE_REFERENCE_PATTERNS = [
+    r"\bwho to call for service\b",
+    r"\bcontact information is displayed\b",
+    r"\bdealer information\b",
+    r"\bview runtime graphs\b",
+    r"\bdelete runtime data\b",
+]
+
+
+PROCEDURE_INCOMPLETE_PATTERNS = [
+    r"\bwhen finished, a dialog box will appear\b",
+    r"\bconfirming the successful\b",
+    r"\bas instructed in the[“\"]?\b",
+    r"\bif an error\b\s*$",
+    r"\bwill automatically\b\s*$",
+    r"\bif it does not come off\b\s*$",
+    r"\bself-\s*$",
+]
+
+
+PROCEDURE_INCOMPLETE_ENDINGS = [
+    "successful",
+    "automatically",
+    "error",
+    "wire",
+    "wires",
+    "those",
+    "existing",
+    "humidity",
+    "color",
+    "letter",
+    "clearance",
+    "make",
+    "will",
+]
+
+
+PROCEDURE_HEADING_POSITIVE_PATTERNS = [
+    r"\binstallation\b",
+    r"\bwire connections\b",
+    r"\bmaking \d+ wires? work\b",
+    r"\bcare and use\b",
+    r"\bmaintenance\b",
+    r"\bcalibration\b",
+    r"\bsetup\b",
+    r"\bedit\b",
+]
+
+
+PROCEDURE_HEADING_NEGATIVE_PATTERNS = [
+    r"\bget to know\b",
+    r"\bdropdown dashboard\b",
+    r"\bhome screen\b",
+    r"\bmain menu buttons\b",
+    r"\bconnectivity symbol table\b",
+    r"\btable of contents\b",
+]
+
+
 def is_noise_line(line: str) -> bool:
     l = line.strip()
     lower = l.lower()
@@ -272,6 +427,123 @@ def clean_handbook_lines(handbook_text: str):
             cleaned.append(line)
 
     return cleaned
+
+
+def detect_document_type(handbook_text: str) -> dict:
+    lines = clean_handbook_lines(handbook_text)
+    sample = " ".join(lines[:80]).lower()
+
+    manual_score = sum(1 for pattern in MANUAL_DOCUMENT_PATTERNS if re.search(pattern, sample))
+    safety_score = sum(1 for pattern in SAFETY_DOCUMENT_PATTERNS if re.search(pattern, sample))
+
+    if manual_score >= safety_score + 2:
+        document_type = "procedural_manual"
+    else:
+        document_type = "safety_handbook"
+
+    confidence = abs(manual_score - safety_score)
+    return {
+        "document_type": document_type,
+        "manual_score": manual_score,
+        "safety_score": safety_score,
+        "confidence": confidence,
+    }
+
+
+def strip_list_marker(text: str) -> str:
+    return re.sub(r"^\s*(?:[\u2022\-\?]\s*|\d+[\).\s-]+)", "", text).strip()
+
+
+def looks_like_manual_step(line: str) -> bool:
+    normalized = strip_list_marker(normalize_policy_text(line)).lower()
+    if not normalized:
+        return False
+    if any(re.search(pattern, normalized) for pattern in PROCEDURE_REFERENCE_PATTERNS):
+        return False
+    if any(re.search(pattern, normalized) for pattern in PROCEDURE_GENERIC_PATTERNS):
+        return False
+    if any(re.match(rf"^{re.escape(start.strip())}\b", normalized) for start in PROCEDURE_IMPERATIVE_STARTS):
+        return True
+    return bool(re.match(r"^(?:if|when)\b", normalized))
+
+
+def classify_manual_step(policy: str, heading: str = "") -> str:
+    lower = normalize_policy_text(policy).lower()
+    heading_lower = heading.lower()
+
+    if any(re.search(pattern, lower) for pattern in PROCEDURE_REFERENCE_PATTERNS):
+        return "reference"
+    if any(re.search(pattern, heading_lower) for pattern in PROCEDURE_HEADING_NEGATIVE_PATTERNS):
+        return "reference"
+    if any(term in lower for term in ["clean the screen", "touch screen", "soft, damp cloth", "calibrat"]):
+        return "maintenance"
+    if any(term in lower for term in ["wire", "wires", "terminal", "jumper", "hvac", "furnace", "power is off", "breaker"]):
+        return "installation"
+    if any(term in lower for term in ["press", "select", "tap", "menu", "sd card", "wi-fi", "skyport"]):
+        return "navigation"
+    if "installation" in heading_lower or "wire connections" in heading_lower:
+        return "installation"
+    if any(term in heading_lower for term in ["care and use", "maintenance", "calibration"]):
+        return "maintenance"
+    return "procedure"
+
+
+def looks_like_incomplete_manual_fragment(line: str) -> bool:
+    normalized = strip_list_marker(normalize_policy_text(line)).lower()
+    if not normalized:
+        return False
+
+    if any(re.search(pattern, normalized) for pattern in PROCEDURE_INCOMPLETE_PATTERNS):
+        return True
+    if any(normalized.endswith(ending) for ending in PROCEDURE_INCOMPLETE_ENDINGS):
+        return True
+    if normalized.count("“") != normalized.count("”"):
+        return True
+    if normalized.count('"') % 2 == 1:
+        return True
+
+    return False
+
+
+def heading_has_procedure_context(heading: str) -> bool:
+    heading_lower = heading.lower()
+    if any(re.search(pattern, heading_lower) for pattern in PROCEDURE_HEADING_NEGATIVE_PATTERNS):
+        return False
+    return any(re.search(pattern, heading_lower) for pattern in PROCEDURE_HEADING_POSITIVE_PATTERNS)
+
+
+def block_has_procedure_context(heading: str, lines) -> bool:
+    if heading_has_procedure_context(heading):
+        return True
+
+    action_lines = 0
+    for line in lines[:8]:
+        normalized = strip_list_marker(normalize_policy_text(line)).lower()
+        if looks_like_manual_step(line):
+            action_lines += 1
+        if re.match(r"^\d+[\).\s-]+", line.strip()) or line.strip().startswith("•"):
+            action_lines += 1
+        if normalized.startswith(("step ", "press ", "select ", "turn off ", "remove ", "loosen ", "connect ")):
+            action_lines += 1
+
+    return action_lines >= 2
+
+
+def find_next_procedure_step(lines, start_index: int, heading: str):
+    for candidate in lines[start_index + 1:]:
+        candidate_stripped = candidate.strip()
+        candidate_looks_step_like = (
+            looks_like_manual_step(candidate)
+            or bool(re.match(r"^(?:[\u2022\-\?]\s*|\d+[\).\s-]+)", candidate_stripped))
+        )
+        if not candidate_looks_step_like:
+            continue
+        if looks_like_incomplete_manual_fragment(candidate):
+            return None
+        if classify_manual_step(candidate, heading) == "reference":
+            return None
+        return candidate
+    return None
 
 
 def split_into_candidate_lines(handbook_text: str):
@@ -356,13 +628,13 @@ def extract_candidate_statements(handbook_text: str):
     return candidates
 
 
-def classify_section(heading: str, lines) -> str:
+def classify_section(heading: str, lines, document_type: str = "safety_handbook") -> str:
     section_text = f"{heading} {' '.join(lines[:8])}"
-    return classify_policy(section_text)
+    return classify_policy(section_text, document_type=document_type)
 
 
-def score_policy_line(line: str, heading: str = "") -> int:
-    category = classify_policy(f"{heading} {line}")
+def score_policy_line(line: str, heading: str = "", document_type: str = "safety_handbook") -> int:
+    category = classify_policy(f"{heading} {line}", document_type=document_type)
     score = scenario_worthiness_score(line, category, heading=heading)
     lower = line.lower()
 
@@ -386,6 +658,26 @@ def score_policy_line(line: str, heading: str = "") -> int:
 
     if 45 <= len(line) <= 180:
         score += 1
+    if document_type == "procedural_manual" and category == "procedure":
+        score += 3
+        manual_kind = classify_manual_step(line, heading)
+        normalized = strip_list_marker(normalize_policy_text(line)).lower()
+        if looks_like_incomplete_manual_fragment(line):
+            score -= 10
+        if looks_like_manual_step(line):
+            score += 5
+        if re.match(r"^\d+[\).\s-]+", line.strip()) or line.strip().startswith("•"):
+            score += 4
+        if any(re.search(pattern, normalized) for pattern in PROCEDURE_GENERIC_PATTERNS):
+            score -= 6
+        if manual_kind == "reference":
+            score -= 8
+        if manual_kind in {"installation", "maintenance"}:
+            score += 3
+        if manual_kind == "navigation":
+            score += 1
+        if len(normalized.split()) < 5:
+            score -= 3
 
     return score
 
@@ -423,6 +715,8 @@ def block_scenario_worthiness(heading: str, lines, category: str) -> int:
 
     if category in {"safety", "reporting", "equipment", "sanitation", "policy"}:
         score += 2
+    if category == "procedure":
+        score += 3
     if category == "general":
         score -= 2
     if category == "opening_shift":
@@ -436,6 +730,11 @@ def block_scenario_worthiness(heading: str, lines, category: str) -> int:
 def build_trigger_from_section(heading: str, policy: str, category: str) -> str:
     heading_lower = heading.lower()
     policy_lower = normalize_policy_text(policy).lower()
+
+    if category == "procedure":
+        if "who to call for service" in policy_lower:
+            return "You are checking the thermostat interface to figure out who to contact for service"
+        return build_manual_step_trigger(policy, heading)
 
     if "under ar ppe" in policy_lower or "wear under ar ppe" in policy_lower:
         return "You are getting dressed for arc-flash work and need to choose what to wear underneath your AR PPE"
@@ -534,6 +833,8 @@ def build_block_prompt(heading: str, policy: str, category: str) -> str:
     trigger = build_trigger_from_section(heading, policy, category)
     escalation = extract_escalation_text(policy)
 
+    if category == "procedure":
+        return f"{trigger}. {build_manual_step_question(policy, heading)}"
     if category == "sanitation":
         return f"{trigger}. What should you do first to control the hazard and keep the area safe?"
     if category == "safety":
@@ -611,6 +912,8 @@ EXPLANATORY_CONTINUATION_STARTS = (
     "there may be times ",
     "for example",
     "or more by ",
+    "use ",
+    "closing ",
 )
 
 
@@ -634,6 +937,10 @@ def previous_line_needs_continuation(prev_lower: str) -> bool:
             "arc",
             "endanger",
             "unpredictably",
+            "away",
+            "self-",
+            "clearance",
+            "make",
         ]
     ):
         return True
@@ -709,8 +1016,16 @@ def merge_candidate_lines(lines):
     return merged
 
 
-def classify_policy(text: str) -> str:
+def classify_policy(text: str, document_type: str = "safety_handbook") -> str:
     l = text.lower()
+
+    if document_type == "procedural_manual":
+        if looks_like_incomplete_manual_fragment(text):
+            return "general"
+        if any(re.search(pattern, l) for pattern in PROCEDURE_REFERENCE_PATTERNS):
+            return "general"
+        if classify_manual_step(text) != "reference":
+            return "procedure"
 
     if "report unsafe condition" in l or "report unsafe conditions" in l:
         if any(term in l for term in ["supervisor", "notify", "immediately", "project"]):
@@ -756,12 +1071,12 @@ def classify_policy(text: str) -> str:
     return "general"
 
 
-def select_policy_category(policy: str, heading: str, block_category: str) -> str:
-    policy_category = classify_policy(policy)
+def select_policy_category(policy: str, heading: str, block_category: str, document_type: str = "safety_handbook") -> str:
+    policy_category = classify_policy(policy, document_type=document_type)
     if policy_category != "general":
         return policy_category
 
-    combined_category = classify_policy(f"{policy} {heading}")
+    combined_category = classify_policy(f"{policy} {heading}", document_type=document_type)
     if combined_category != "general":
         return combined_category
 
@@ -780,6 +1095,12 @@ def looks_like_policy_line(line: str) -> bool:
         return False
 
     if any(re.search(pattern, lower) for pattern in ADMIN_FRAGMENT_PATTERNS):
+        return False
+    if "this will appear when" in lower:
+        return False
+    if looks_like_incomplete_manual_fragment(line):
+        return False
+    if any(re.search(pattern, stripped_lower) for pattern in PROCEDURE_GENERIC_PATTERNS):
         return False
 
     if any(
@@ -876,12 +1197,16 @@ def looks_like_policy_line(line: str) -> bool:
             "importance",
             "unpredictably",
             "flammable",
+            "along",
         ]
     ):
         return False
 
     if lower.endswith("equipment used"):
         return False
+
+    if looks_like_manual_step(line):
+        return True
 
     signal_count = sum(1 for pattern in POLICY_SIGNAL_PATTERNS if re.search(pattern, lower))
     if signal_count == 0:
@@ -926,6 +1251,8 @@ def scenario_worthiness_score(line: str, category: str, heading: str = "") -> in
 
     if category in {"safety", "reporting", "equipment", "sanitation", "policy"}:
         score += 2
+    if category == "procedure":
+        score += 3
     if category == "general":
         score -= 1
     if category == "opening_shift":
@@ -939,11 +1266,14 @@ def scenario_worthiness_score(line: str, category: str, heading: str = "") -> in
 
     if any(phrase in lower for phrase in ["rescue team or service", "trained rescue team"]):
         score -= 5
+    if category == "procedure" and any(re.search(pattern, lower) for pattern in PROCEDURE_PATTERNS):
+        score += 3
 
     return score
 
 
-def extract_policies(handbook_text: str):
+def extract_policies(handbook_text: str, document_type: str | None = None):
+    resolved_document_type = document_type or detect_document_type(handbook_text)["document_type"]
     scored = []
     for block in build_section_blocks(handbook_text):
         heading = block["heading"]
@@ -951,45 +1281,61 @@ def extract_policies(handbook_text: str):
         if any(re.search(pattern, heading_lower) for pattern in SECTION_NEGATIVE_PATTERNS):
             continue
 
-        block_category = classify_section(heading, block["lines"])
+        block_category = classify_section(heading, block["lines"], document_type=resolved_document_type)
+        procedure_context = block_has_procedure_context(heading, block["lines"]) if resolved_document_type == "procedural_manual" else False
         best_lines_by_category = {}
 
-        for line in block["lines"]:
+        for index, line in enumerate(block["lines"]):
             if not looks_like_policy_line(line):
                 continue
 
-            category = select_policy_category(line, heading, block_category)
-            line_score = score_policy_line(line, heading=heading)
+            category = select_policy_category(line, heading, block_category, document_type=resolved_document_type)
+            procedure_kind = classify_manual_step(line, heading) if category == "procedure" else None
+            is_explicit_procedure_step = looks_like_manual_step(line) or bool(
+                re.match(r"^(?:[\u2022\-\?]\s*|\d+[\).\s-]+)", line.strip())
+            )
+            next_step = find_next_procedure_step(block["lines"], index, heading) if category == "procedure" and procedure_context else None
+            if resolved_document_type == "procedural_manual" and (
+                procedure_kind == "reference"
+                or looks_like_incomplete_manual_fragment(line)
+                or (category == "procedure" and not procedure_context)
+                or (category == "procedure" and not is_explicit_procedure_step)
+            ):
+                continue
+            line_score = score_policy_line(line, heading=heading, document_type=resolved_document_type)
             existing = best_lines_by_category.get(category)
             if existing is None or line_score > existing[1]:
-                best_lines_by_category[category] = (line, line_score)
+                best_lines_by_category[category] = (line, line_score, procedure_kind, next_step)
 
         if not best_lines_by_category:
             continue
 
-        for category, (policy_line, line_score) in best_lines_by_category.items():
+        for category, (policy_line, line_score, procedure_kind, next_step) in best_lines_by_category.items():
             block_score = 0 if heading == "General" else block_scenario_worthiness(heading, block["lines"], category)
             total_score = line_score + block_score
             if total_score < 4:
                 continue
 
-            scored.append((total_score, policy_line, category, heading))
+            scored.append((total_score, policy_line, category, heading, procedure_kind, next_step))
 
     scored.sort(key=lambda x: x[0], reverse=True)
 
     chosen = []
     seen = set()
 
-    for score, line, category, heading in scored:
+    for score, line, category, heading, procedure_kind, next_step in scored:
         key = (heading.lower(), category)
         if key not in seen:
-            prompt = build_best_prompt(heading, line, category)
+            prompt = build_best_prompt(heading, line, category, next_step=next_step)
             if not prompt:
                 continue
             chosen.append(
                 {
                     "policy": line,
+                    "expected_policy": next_step or line,
                     "category": category,
+                    "document_type": resolved_document_type,
+                    "procedure_kind": procedure_kind,
                     "heading": heading,
                     "score": score,
                     "prompt": prompt,
@@ -1023,6 +1369,7 @@ def build_policy_hint(policy: str, category: str) -> str:
         "reporting": "Handbook cue: focus on who needs to be informed and what key facts should be communicated.",
         "policy": "Handbook cue: focus on checking the rule before acting instead of improvising.",
         "equipment": "Handbook cue: focus on safe equipment or PPE use and how you prevent others from being exposed.",
+        "procedure": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing.",
         "customer_service": "Handbook cue: focus on helping the customer without guessing or creating additional risk.",
         "opening_shift": "Handbook cue: focus on what must be ready or corrected before work continues.",
     }
@@ -1117,8 +1464,96 @@ def join_terms(terms):
     return f"{terms[0]} and {terms[1]}"
 
 
+def build_manual_step_trigger(policy: str, heading: str = "") -> str:
+    normalized = strip_list_marker(normalize_policy_text(policy))
+    lower = normalized.lower()
+    manual_kind = classify_manual_step(policy, heading)
+
+    if "power is off" in lower or "turn off the power" in lower:
+        return "You are about to service the unit and need to make the system safe before touching any wiring"
+    if "assemble tools" in lower:
+        return "You are getting ready to install the unit and need to gather what the manual requires first"
+    if "label and disconnect wires" in lower or ("disconnect wires" in lower and "label" in lower):
+        return "You are removing the old control assembly and need to keep the wiring organized for reconnection"
+    if "soft, damp cloth" in lower or "clean the screen" in lower:
+        return "The equipment display needs cleaning and you want to do it the way the manual recommends"
+    if "terminal designations" in lower:
+        return "The terminal labels on the old control assembly do not match the new one"
+    if re.search(r"\b4 wires?\b", lower) and re.search(r"\b5(?:\s+wires?)?\b", lower):
+        return "You are wiring the unit and discover the setup only has 4 wires when the install requires 5"
+    if re.search(r"\b5 wires?\b", lower) and re.search(r"\b6(?:\s+wires?)?\b", lower):
+        return "You are wiring the unit and discover the setup only has 5 wires when the install requires 6"
+    if lower.startswith("press ") or lower.startswith("select "):
+        action = strip_list_marker(normalized).rstrip(".")
+        return f"You are in the equipment controls and need to complete this step: {action}"
+    if manual_kind == "installation":
+        return f"You are working through installation and reach this step: {strip_list_marker(normalized).rstrip('.')}"
+    if manual_kind == "maintenance":
+        return f"You are following the equipment care instructions and reach this step: {strip_list_marker(normalized).rstrip('.')}"
+    return f"You are following the manual and reach this step: {strip_list_marker(normalized).rstrip('.')}"
+
+
+def build_manual_step_question(policy: str, heading: str = "", next_step: str | None = None) -> str:
+    lower = strip_list_marker(normalize_policy_text(policy)).lower()
+    next_lower = strip_list_marker(normalize_policy_text(next_step)).lower() if next_step else ""
+
+    if next_step:
+        if "place the" in next_lower and "terminal c" in next_lower and "g wire" in next_lower:
+            return "According to the manual, what step comes next for the G wire?"
+        if next_lower.startswith("disconnect the wires"):
+            return "According to the manual, what step comes next after removing the control assembly from the wall?"
+        if next_lower.startswith("enter the password") or "password" in next_lower:
+            return "According to the manual, what should you do next after selecting the access point?"
+        if next_lower.startswith("press ") or next_lower.startswith("select "):
+            return "According to the manual, what should you do next in this procedure?"
+        return "According to the manual, what step comes next in this procedure?"
+
+    if "power is off" in lower or "turn off the power" in lower:
+        return "According to the manual, what should you do at this exact step before disconnecting anything?"
+    if "assemble tools" in lower:
+        return "According to the manual, what should you gather at this exact step before starting?"
+    if "label and disconnect wires" in lower or ("disconnect wires" in lower and "label" in lower):
+        return "According to the manual, what should you do with the wires at this exact step so reconnection goes smoothly?"
+    if "soft, damp cloth" in lower or "clean the screen" in lower:
+        return "According to the manual, what should you use at this exact step to clean it correctly?"
+    if "terminal designations" in lower:
+        return "According to the manual, what should you check at this exact step before making the new connections?"
+    if re.search(r"\bremove the [“\"]?g wire[”\"]?\b", lower):
+        return "According to the manual, what should you do with the G wire at this exact step before moving on?"
+    if "loosen the screws holding the thermostat base" in lower or "subbase to the wall and lift away" in lower:
+        return "According to the manual, what should you do at this exact step to remove the control assembly from the wall?"
+    if re.search(r"\b4 wires?\b", lower) and re.search(r"\b5(?:\s+wires?)?\b", lower):
+        return "According to the manual, what should you do at this exact step in this 4-wire setup?"
+    if re.search(r"\b5 wires?\b", lower) and re.search(r"\b6(?:\s+wires?)?\b", lower):
+        return "According to the manual, what should you do at this exact step in this 5-wire setup?"
+    if lower.startswith("press ") or lower.startswith("select "):
+        return "According to the manual, what should you do at this exact step on the controls before moving on?"
+    return "According to the manual, what should you do at this exact step before moving on?"
+
+
 def tokenize_prompt_words(text: str):
     return [word for word in re.findall(r"[a-z][a-z0-9\-']+", text.lower()) if len(word) > 3]
+
+
+def manual_prompt_family(item) -> str:
+    combined = f"{item.get('policy', '')} {item.get('expected_policy', '')}".lower()
+
+    family_patterns = [
+        (r"\bunlock key\b|\bkeypad unlock led\b", "manual_unlock_keypad"),
+        (r"\bplus key\b|\bminus key\b|\bnext parameter\b", "manual_parameter_navigation"),
+        (r"\benter key\b.*\bdisplay\b|\bdisplay the value\b", "manual_enter_display"),
+        (r"\bmodify key\b|\bvalue will flash\b|\bfield will flash\b", "manual_modify_value"),
+        (r"\bdefrost symbol\b|\bdefrost is in effect\b", "manual_defrost_indicator"),
+        (r"\baccess point\b|\bautomatic setup\b|\bpress next\b", "manual_wifi_setup"),
+        (r"\bg wire\b|\bterminal c\b", "manual_g_wire"),
+        (r"\bsoft, damp cloth\b|\bsoft cloth\b|\babrasive cleaners\b", "manual_cleaning"),
+    ]
+
+    for pattern, family in family_patterns:
+        if re.search(pattern, combined):
+            return family
+
+    return ""
 
 
 def extract_trigger_text(policy: str) -> str:
@@ -1126,6 +1561,18 @@ def extract_trigger_text(policy: str) -> str:
     lower = normalized.lower()
 
     direct_policy_patterns = [
+        (
+            r"4 wires.+5 wires",
+            "you are wiring the thermostat and only 4 wires are available even though the install requires 5",
+        ),
+        (
+            r"who to call for service",
+            "you are using the equipment interface and need to locate the service contact information",
+        ),
+        (
+            r"clean the screen|touch screen",
+            "you need to clean the equipment display without damaging it",
+        ),
         (
             r"under ar ppe|wear under ar ppe",
             "you are getting dressed for arc-flash work and need to choose what to wear underneath your ar ppe",
@@ -1274,6 +1721,14 @@ def prompt_signature(prompt: str) -> str:
             r"you notice an unsafe condition in the work area\..+",
             "generic_unsafe_condition",
         ),
+        (
+            r"the equipment display needs cleaning.+what should you use at this exact step to clean it correctly\?",
+            "manual_screen_cleaning",
+        ),
+        (
+            r"you are following the equipment care instructions and reach this step: use a soft cloth without solvents or abrasive cleaners\..+",
+            "manual_screen_cleaning",
+        ),
     ]
 
     for pattern, signature in normalized_patterns:
@@ -1300,10 +1755,12 @@ def prompts_are_too_similar(existing_prompt: str, candidate_prompt: str) -> bool
     return overlap >= 0.85
 
 
-def build_best_prompt(heading: str, policy: str, category: str) -> str | None:
+def build_best_prompt(heading: str, policy: str, category: str, next_step: str | None = None) -> str | None:
     candidates = []
     heading_prompt = build_block_prompt(heading, policy, category)
-    policy_prompt = build_policy_specific_prompt(policy, category)
+    if category == "procedure":
+        heading_prompt = f"{build_trigger_from_section(heading, policy, category)}. {build_manual_step_question(policy, heading, next_step=next_step)}"
+    policy_prompt = build_policy_specific_prompt(policy, category, next_step=next_step)
 
     for candidate in [heading_prompt, policy_prompt]:
         if is_usable_prompt(candidate):
@@ -1358,9 +1815,9 @@ def build_structured_rule(policy: str, category: str) -> dict:
     }
 
 
-def build_policy_specific_prompt(policy: str, category: str, heading: str = "") -> str:
+def build_policy_specific_prompt(policy: str, category: str, heading: str = "", next_step: str | None = None) -> str:
     if heading:
-        return build_block_prompt(heading, policy, category)
+        return f"{build_trigger_from_section(heading, policy, category)}. {build_manual_step_question(policy, heading, next_step=next_step)}" if category == "procedure" else build_block_prompt(heading, policy, category)
 
     rule = build_structured_rule(policy, category)
     trigger = sentence_case(rule["trigger"])
@@ -1399,6 +1856,9 @@ def build_policy_specific_prompt(policy: str, category: str, heading: str = "") 
             "What should you do next before making a decision?"
         )
 
+    if category == "procedure":
+        return f"{trigger}. {build_manual_step_question(policy, heading, next_step=next_step)}"
+
     if category == "equipment":
         return (
             f"{trigger}. What should you do right away, and how do you keep others safe?"
@@ -1418,7 +1878,12 @@ def build_policy_specific_prompt(policy: str, category: str, heading: str = "") 
 def build_initial_scenarios(policies, max_scenarios: int = 5):
     prepared_items = []
     for item in policies:
-        prompt = item.get("prompt") or build_best_prompt(item.get("heading", ""), item["policy"], item["category"])
+        prompt = item.get("prompt") or build_best_prompt(
+            item.get("heading", ""),
+            item["policy"],
+            item["category"],
+            next_step=item.get("expected_policy") if item.get("expected_policy") != item["policy"] else None,
+        )
         if not prompt:
             continue
         prepared_items.append({**item, "prompt": prompt})
@@ -1426,17 +1891,24 @@ def build_initial_scenarios(policies, max_scenarios: int = 5):
     scenarios = []
     used_categories = set()
     used_policy_keys = set()
+    used_manual_families = set()
     next_id = 1
 
-    def can_add_prompt(candidate_prompt: str) -> bool:
-        return not any(prompts_are_too_similar(existing["prompt"], candidate_prompt) for existing in scenarios)
+    def can_add_item(candidate_item) -> bool:
+        candidate_prompt = candidate_item["prompt"]
+        if any(prompts_are_too_similar(existing["prompt"], candidate_prompt) for existing in scenarios):
+            return False
+        manual_family = manual_prompt_family(candidate_item)
+        if manual_family and manual_family in used_manual_families:
+            return False
+        return True
 
     for item in prepared_items:
         if len(used_categories) >= 3:
             break
         if item["category"] in used_categories:
             continue
-        if not can_add_prompt(item["prompt"]):
+        if not can_add_item(item):
             continue
 
         policy_key = (item["category"], item["policy"])
@@ -1446,6 +1918,7 @@ def build_initial_scenarios(policies, max_scenarios: int = 5):
                 "kind": "scenario",
                 "category": item["category"],
                 "policy": item["policy"],
+                "expected_policy": item.get("expected_policy", item["policy"]),
                 "heading": item.get("heading"),
                 "hint": item.get("hint"),
                 "prompt": item["prompt"],
@@ -1453,6 +1926,9 @@ def build_initial_scenarios(policies, max_scenarios: int = 5):
         )
         used_categories.add(item["category"])
         used_policy_keys.add(policy_key)
+        manual_family = manual_prompt_family(item)
+        if manual_family:
+            used_manual_families.add(manual_family)
         next_id += 1
 
         if len(scenarios) >= max_scenarios:
@@ -1465,7 +1941,7 @@ def build_initial_scenarios(policies, max_scenarios: int = 5):
         policy_key = (item["category"], item["policy"])
         if policy_key in used_policy_keys:
             continue
-        if not can_add_prompt(item["prompt"]):
+        if not can_add_item(item):
             continue
 
         scenarios.append(
@@ -1474,12 +1950,16 @@ def build_initial_scenarios(policies, max_scenarios: int = 5):
                 "kind": "scenario",
                 "category": item["category"],
                 "policy": item["policy"],
+                "expected_policy": item.get("expected_policy", item["policy"]),
                 "heading": item.get("heading"),
                 "hint": item.get("hint"),
                 "prompt": item["prompt"],
             }
         )
         used_policy_keys.add(policy_key)
+        manual_family = manual_prompt_family(item)
+        if manual_family:
+            used_manual_families.add(manual_family)
         next_id += 1
 
     if not scenarios:
@@ -1503,12 +1983,43 @@ def build_follow_up_scenario(previous_scenario, next_id):
     category = previous_scenario["category"]
     follow_up_prompt = FOLLOW_UP_TEMPLATES.get(category, FOLLOW_UP_TEMPLATES["general"])
     normalized_policy = normalize_policy_text(previous_scenario["policy"])
+    expected_policy = previous_scenario.get("expected_policy", previous_scenario["policy"])
+    normalized_expected = normalize_policy_text(expected_policy)
+
+    if category == "procedure":
+        step_summary = strip_list_marker(normalized_policy).rstrip(".")
+        if normalized_expected != normalized_policy:
+            return {
+                "id": next_id,
+                "kind": "follow_up",
+                "category": category,
+                "policy": previous_scenario["policy"],
+                "expected_policy": expected_policy,
+                "prompt": (
+                    "Follow-up: Stay in the same procedure. "
+                    f'After this step: "{step_summary}", what comes next in the manual? '
+                    "Name the next action as specifically as you can."
+                ),
+            }
+        return {
+            "id": next_id,
+            "kind": "follow_up",
+            "category": category,
+            "policy": previous_scenario["policy"],
+            "expected_policy": expected_policy,
+            "prompt": (
+                "Follow-up: Be more specific to the manual step. "
+                f'The step here is: "{step_summary}". '
+                + follow_up_prompt
+            ),
+        }
 
     return {
         "id": next_id,
         "kind": "follow_up",
         "category": category,
         "policy": previous_scenario["policy"],
+        "expected_policy": expected_policy,
         "prompt": (
             "Follow-up: Your earlier answer needs more policy-specific detail. "
             f'The handbook guidance here is: "{normalized_policy}". '

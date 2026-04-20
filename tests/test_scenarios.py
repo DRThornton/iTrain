@@ -4,6 +4,7 @@ from app.tools.scenarios import (
     build_follow_up_scenario,
     build_initial_scenarios,
     build_policy_specific_prompt,
+    detect_document_type,
     extract_candidate_statements,
     extract_policies,
     looks_like_policy_line,
@@ -113,10 +114,50 @@ def test_build_initial_scenarios_skips_near_duplicate_prompt_shapes():
     assert [item["policy"] for item in scenarios] == ["Policy A", "Policy C"]
 
 
+def test_build_initial_scenarios_skips_duplicate_manual_prompt_families():
+    policies = [
+        {
+            "policy": "Press the Unlock Key twice within a second in order to unlock the keypad.",
+            "expected_policy": "The Keypad Unlock LED will turn on to indicate the keypad is now live.",
+            "category": "procedure",
+            "heading": "Unlock Key",
+            "hint": "hint",
+            "prompt": "You are in the equipment menus and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad. According to the manual, what step comes next in this procedure?",
+        },
+        {
+            "policy": "Press the Unlock Key twice within a second in order to unlock the keypad.",
+            "expected_policy": "The Keypad Unlock LED will turn on to indicate the keypad is now live.",
+            "category": "procedure",
+            "heading": "Customer Password",
+            "hint": "hint",
+            "prompt": "You are in the equipment menus and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad. According to the manual, what step comes next in this procedure?",
+        },
+        {
+            "policy": "Use a soft, damp cloth to clean the screen.",
+            "expected_policy": "Use a soft, damp cloth to clean the screen.",
+            "category": "procedure",
+            "heading": "Care",
+            "hint": "hint",
+            "prompt": "The equipment display needs cleaning and you want to do it the way the manual recommends. According to the manual, what should you use at this exact step to clean it correctly?",
+        },
+    ]
+
+    scenarios = build_initial_scenarios(policies, max_scenarios=5)
+
+    assert len(scenarios) == 2
+
+
 def test_prompts_are_too_similar_for_generic_duplicate_ppe_prompts():
     assert prompts_are_too_similar(
         "You are assigned a task that requires the correct protective equipment. What should you do right away to keep yourself and others safe?",
         "You are assigned a task that requires the correct protective equipment. What should you do right away to keep yourself and others safe?",
+    )
+
+
+def test_prompts_are_too_similar_for_manual_cleaning_variants():
+    assert prompts_are_too_similar(
+        "The equipment display needs cleaning and you want to do it the way the manual recommends. According to the manual, what should you use at this exact step to clean it correctly?",
+        "You are following the equipment care instructions and reach this step: Use a soft cloth without solvents or abrasive cleaners. According to the manual, what should you do at this exact step before moving on?",
     )
 
 
@@ -134,6 +175,22 @@ def test_build_follow_up_scenario_references_policy_text():
     assert follow_up["kind"] == "follow_up"
     assert "sharp tools" in follow_up["prompt"].lower()
     assert "equipment right away" in follow_up["prompt"].lower()
+
+
+def test_build_follow_up_scenario_uses_manual_step_wording_for_procedures():
+    scenario = {
+        "id": 1,
+        "kind": "scenario",
+        "category": "procedure",
+        "policy": "Turn off the power to the Heating/Air Conditioning system at the main fuse panel.",
+        "prompt": "placeholder",
+    }
+
+    follow_up = build_follow_up_scenario(scenario, next_id=2)
+
+    assert follow_up["kind"] == "follow_up"
+    assert "manual step" in follow_up["prompt"].lower()
+    assert "turn off the power" in follow_up["prompt"].lower()
 
 
 def test_looks_like_policy_line_rejects_narrative_pdf_fragments():
@@ -191,6 +248,17 @@ def test_build_policy_specific_prompt_creates_actionable_policy_scenario():
     lowered = prompt.lower()
     assert "refund decision" in lowered
     assert "what should you do next before making a decision" in lowered
+
+
+def test_build_policy_specific_prompt_for_manual_step_asks_about_current_step():
+    prompt = build_policy_specific_prompt(
+        "4. Remove the “G wire” from the terminal marked G.",
+        "procedure",
+    )
+
+    lowered = prompt.lower()
+    assert "what should you do with the g wire at this exact step" in lowered
+    assert "what should you do next before continuing" not in lowered
 
 
 def test_build_block_prompt_uses_section_context_for_heat_illness():
@@ -272,6 +340,79 @@ def test_extract_policies_uses_policy_text_before_heading_for_equipment_prompts(
     prompt = scenarios[0]["prompt"].lower()
     assert "equipment or tools" in prompt
     assert "company vehicle" not in prompt
+
+
+def test_detect_document_type_identifies_procedural_manual():
+    handbook_text = """
+    Johnson Controls Thermostat User Manual
+    Touch Screen Calibration
+    Use a soft, damp cloth to clean the screen.
+    If you would like to install the JCI thermostat using only 4 wires when 5 are required, follow the directions below.
+    """
+
+    profile = detect_document_type(handbook_text)
+
+    assert profile["document_type"] == "procedural_manual"
+    assert profile["manual_score"] > profile["safety_score"]
+
+
+def test_detect_document_type_identifies_safety_handbook():
+    handbook_text = """
+    SAFETY PROGRAM
+    Employees must report unsafe conditions to their supervisor immediately.
+    Employees must wear the required personal protective equipment.
+    """
+
+    profile = detect_document_type(handbook_text)
+
+    assert profile["document_type"] == "safety_handbook"
+    assert profile["safety_score"] >= profile["manual_score"]
+
+
+def test_extract_policies_builds_procedural_prompt_for_manual_content():
+    handbook_text = """
+    Johnson Controls Thermostat User Manual
+    Touch Screen Calibration
+    Use a soft, damp cloth to clean the screen.
+    """
+
+    policies = extract_policies(handbook_text, document_type="procedural_manual")
+
+    assert policies
+    assert policies[0]["category"] == "procedure"
+    assert "according to the manual" in policies[0]["prompt"].lower()
+
+
+def test_extract_policies_prefers_concrete_installation_step_over_intro_line():
+    handbook_text = """
+    Installation Instructions
+    Remove and Replace the Old Thermostat
+    To install the thermostat properly, please follow these step by step instructions.
+    • Assemble tools: Flat blade screwdriver, wire cutters and wire strippers.
+    • Turn off the power to the Heating/Air Conditioning system at the main fuse panel.
+    """
+
+    policies = extract_policies(handbook_text, document_type="procedural_manual")
+
+    assert policies
+    policy_text = policies[0]["policy"].lower()
+    assert "turn off the power" in policy_text or "assemble tools" in policy_text
+    assert "follow these step by step" not in policy_text
+
+
+def test_extract_policies_builds_specific_manual_prompt_for_power_off_step():
+    handbook_text = """
+    Installation Instructions
+    Remove and Replace the Old Thermostat
+    • Turn off the power to the Heating/Air Conditioning system at the main fuse panel.
+    """
+
+    policies = extract_policies(handbook_text, document_type="procedural_manual")
+
+    assert policies
+    prompt = policies[0]["prompt"].lower()
+    assert "before disconnecting anything" in prompt
+    assert "system safe" in prompt or "power" in prompt
 
 
 def test_split_into_candidate_lines_merges_continuation_lines():
@@ -396,6 +537,9 @@ def test_extract_candidate_statements_skips_intro_sections():
 def test_looks_like_policy_line_rejects_inline_numbered_pdf_fragments():
     assert not looks_like_policy_line(
         "2 - Document the equipment inspection before use on each shift 12 - Vehicles must have service & parking brakes, brake lights"
+    )
+    assert not looks_like_policy_line(
+        "when they need service. This will appear when the “Who To Call For Service”"
     )
 
 
@@ -587,6 +731,18 @@ def test_build_block_prompt_uses_loose_items_trigger():
 
     lowered = prompt.lower()
     assert "clothing or personal items" in lowered
+
+
+def test_build_block_prompt_uses_manual_procedure_question_for_procedural_content():
+    prompt = build_block_prompt(
+        "Making 4 Wires Work When 5 Wires Are Required",
+        "If you would like to install the JCI thermostat using only 4 wires when 5 are required, follow the directions below.",
+        "procedure",
+    )
+
+    lowered = prompt.lower()
+    assert "according to the manual" in lowered
+    assert "4 wires" in lowered
 
 
 def test_looks_like_policy_line_rejects_unclosed_example_fragment():

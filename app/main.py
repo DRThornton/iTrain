@@ -22,6 +22,28 @@ if "learner_name" not in st.session_state:
     st.session_state.learner_name = "Demo User"
 if "manual_names" not in st.session_state:
     st.session_state.manual_names = []
+if "document_type" not in st.session_state:
+    st.session_state.document_type = None
+
+
+def current_question_number(session) -> int:
+    history = session.get("history", [])
+    current = session.get("current")
+    completed_primary_turns = sum(1 for item in history if item.get("kind", "scenario") != "follow_up")
+    if current is None:
+        return completed_primary_turns
+    if current.get("kind") == "follow_up":
+        return max(1, completed_primary_turns)
+    return completed_primary_turns + 1
+
+
+def turn_label(item) -> str:
+    question_number = item.get("question_number")
+    if question_number is None:
+        return "Turn"
+    if item.get("kind") == "follow_up":
+        return f"Question {question_number} Follow-up"
+    return f"Question {question_number}"
 
 
 def load_default_handbook() -> str:
@@ -51,6 +73,7 @@ with st.sidebar:
                 st.session_state.last_feedback = None
                 st.session_state.report = None
                 st.session_state.manual_names = []
+                st.session_state.document_type = None
                 st.error("Upload a handbook to start training, or enable bundled sample handbook demo mode.")
                 st.stop()
 
@@ -64,8 +87,9 @@ with st.sidebar:
             st.session_state.report = None
             st.session_state.learner_name = learner_name
             st.session_state.manual_names = manual_names
+            st.session_state.document_type = session.get("document_type")
             if uploaded_handbook is not None:
-                st.success("Training module loaded from uploaded handbook.")
+                st.success("Training module loaded from uploaded document.")
             else:
                 st.success("Training module loaded from bundled sample handbook.")
         except Exception as e:
@@ -87,10 +111,16 @@ with tabs[0]:
     else:
         history = session.get("history", [])
         current = session.get("current")
+        document_type = session.get("document_type", "safety_handbook")
         completed_primary_turns = sum(1 for item in history if item.get("kind", "scenario") != "follow_up")
         total_primary_turns = session.get("total_primary_turns", 0)
+        question_number = current_question_number(session)
 
         st.write(f"Completed questions: **{completed_primary_turns} / {total_primary_turns}**")
+        if document_type == "procedural_manual":
+            st.caption("Detected mode: Procedural manual. Prompts focus on the next documented step or check.")
+        else:
+            st.caption("Detected mode: Safety handbook. Prompts focus on workplace actions, escalation, and policy use.")
 
         if st.session_state.last_feedback is not None:
             feedback = st.session_state.last_feedback
@@ -102,9 +132,9 @@ with tabs[0]:
         if current is None:
             st.success("Training complete.")
         else:
-            st.markdown(f"### Turn {current['id']}")
+            st.markdown(f"### Question {question_number} of {total_primary_turns}")
             if current.get("kind") == "follow_up":
-                st.info("The agent requested a follow-up before advancing.")
+                st.info(f"Follow-up for Question {question_number}. You are still working on the same question before moving on.")
             st.write(current["prompt"])
             if current.get("kind") != "follow_up" and current.get("hint"):
                 st.caption(current["hint"])
@@ -128,7 +158,7 @@ with tabs[0]:
         if history:
             st.write("### Completed Turns")
             for item in history:
-                st.markdown(f"#### Turn {item['scenario_id']}")
+                st.markdown(f"#### {turn_label(item)}")
                 st.write(item["prompt"])
                 st.write(f"**Response:** {item['response']}")
                 st.write(f"**Score:** {item['score']['label']}")
@@ -145,6 +175,8 @@ with tabs[1]:
         st.json(report["summary"])
         if report.get("manual_names"):
             st.write(f"**Manuals used:** {', '.join(report['manual_names'])}")
+        if report.get("document_type"):
+            st.write(f"**Detected document type:** {report['document_type']}")
         st.write(f"**Recommendation:** {report['recommendation']}")
         if report.get("focus_areas"):
             st.write(f"**Focus areas:** {', '.join(report['focus_areas'])}")
@@ -152,7 +184,8 @@ with tabs[1]:
 
         st.write("### Detailed Results")
         for item in report["results"]:
-            st.markdown(f"#### Scenario {item['scenario_id']}")
+            label = turn_label(item)
+            st.markdown(f"#### {label}")
             st.write(f"**Learner response:** {item['response']}")
             st.write(f"**Score:** {item['score']['label']}")
             st.write(f"**Rationale:** {item['score']['rationale']}")

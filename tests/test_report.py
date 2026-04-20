@@ -43,8 +43,10 @@ def test_build_manager_report_includes_manual_names_and_debug_payload():
     report = build_manager_report(
         [make_result("good")],
         manual_names=["custom_manual.pdf"],
+        document_type="procedural_manual",
         extracted_policy_debug=debug_items,
     )
 
     assert report["manual_names"] == ["custom_manual.pdf"]
+    assert report["document_type"] == "procedural_manual"
     assert report["debug"]["extracted_policy_debug"] == debug_items

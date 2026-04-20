@@ -1,151 +1,217 @@
 {
   "learner_name": "Demo User",
-  "completed_at": "2026-04-18T02:07:50.193353Z",
+  "completed_at": "2026-04-20T02:38:32.323327Z",
   "manual_names": [
-    "OSHA4472.pdf"
+    "G-Series Ref_Frz_Hot Food Reach-In Pass-thru Owner Man TR35748 (02-24).pdf"
   ],
+  "document_type": "procedural_manual",
   "summary": {
-    "good": 2,
-    "neutral": 6,
+    "good": 4,
+    "neutral": 3,
     "bad": 0
   },
-  "weighted_score": 4,
+  "weighted_score": 8,
   "recommendation": "pass",
   "focus_areas": [
-    "equipment",
-    "safety"
+    "procedure"
   ],
   "results": [
     {
       "scenario_id": 1,
-      "prompt": "You are preparing to work near equipment with potential arc-flash hazards. What should you do right away to keep yourself and others safe?",
-      "response": "I would insure I am wearing the right PPE clothing.",
-      "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "Ultimately, arc flashes are less likely to occur when equipment is properly maintained. Having recognized the potential hazards related to arc flashes, employers and workers should assess their likelihood and severity."
-      }
-    },
-    {
-      "scenario_id": 2,
-      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"Ultimately, arc flashes are less likely to occur when equipment is properly maintained. Having recognized the potential hazards related to arc flashes, employers and workers should assess their likelihood and severity\". What would you do with the equipment right away to keep others safe?",
-      "response": "I would inspect it to make sure there are no deficiencies in the equipment.",
-      "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "Ultimately, arc flashes are less likely to occur when equipment is properly maintained. Having recognized the potential hazards related to arc flashes, employers and workers should assess their likelihood and severity."
-      }
-    },
-    {
-      "scenario_id": 2,
-      "prompt": "You notice an unsafe condition in the work area. What immediate action should you take? Who should be notified?",
-      "response": "I would do my best to address the issue.",
-      "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "Before discussing how to identify and mitigate arc flash hazards, two common myths should be addressed. Many workers mistakenly assume that they do not need arc rated or arc flash rated"
-      }
-    },
-    {
-      "scenario_id": 3,
-      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"Before discussing how to identify and mitigate arc flash hazards, two common myths should be addressed. Many workers mistakenly assume that they do not need arc rated or arc flash rated\". What immediate action would reduce the safety risk, and when would you escalate it?",
-      "response": "Every worker needs to have arc rated PPE when in situation like this.",
-      "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "Before discussing how to identify and mitigate arc flash hazards, two common myths should be addressed. Many workers mistakenly assume that they do not need arc rated or arc flash rated"
-      }
-    },
-    {
-      "scenario_id": 3,
-      "prompt": "You are planning work around an electrical hazard and need controls beyond just PPE. What should you do right away to keep yourself and others safe?",
-      "response": "I would make sure I have the correct arc rated equipment on and that it is up to standard.",
-      "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "Employers must not rely solely on PPE alone to control hazards when other effective control options are available. PPE can be effective, but only when workers"
-      }
-    },
-    {
-      "scenario_id": 4,
-      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"Employers must not rely solely on PPE alone to control hazards when other effective control options are available. PPE can be effective, but only when workers\". What would you do with the equipment right away to keep others safe?",
-      "response": "It is best to try to mitigate potential risk and shut off systems that do not need to be on.",
-      "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "Employers must not rely solely on PPE alone to control hazards when other effective control options are available. PPE can be effective, but only when workers"
-      }
-    },
-    {
-      "scenario_id": 4,
-      "prompt": "You are assigned a task that requires the correct protective equipment. What should you do right away to keep yourself and others safe?",
-      "response": "I would make sure to wear the right PPE.",
+      "question_number": 1,
+      "kind": "scenario",
+      "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
+      "response": "the unlock led will turn on",
       "score": {
         "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: protective equipment.",
-        "citation": "The use of administrative controls and PPE require"
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: keypad-led step.",
+        "citation": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live."
+      }
+    },
+    {
+      "scenario_id": 2,
+      "question_number": 2,
+      "kind": "scenario",
+      "prompt": "You are in the equipment controls and need to complete this step: Press the Enter Key to display the value of the Set Point. According to the manual, what step comes next in this procedure?",
+      "response": "use the plus key",
+      "score": {
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: plus-key step.",
+        "citation": "\u2022 Use the Plus Key to move to the next parameter (Set Point Differential)."
+      }
+    },
+    {
+      "scenario_id": 3,
+      "question_number": 3,
+      "kind": "scenario",
+      "prompt": "You are following the manual and reach this step: When a Date/Time field is acceptable, press the Enter Key to use the value. According to the manual, what step comes next in this procedure?",
+      "response": "you must step through all date/time fields to change any one field",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer mostly repeats the handbook wording, but it does not clearly show how the learner would apply the policy.",
+        "citation": "\u2022 You must step through all six Date/Time fields to change any one field."
+      }
+    },
+    {
+      "scenario_id": 6,
+      "question_number": 3,
+      "kind": "follow_up",
+      "prompt": "Follow-up: Stay in the same procedure. After this step: \"When a Date/Time field is acceptable, press the Enter Key to use the value\", what comes next in the manual? Name the next action as specifically as you can.",
+      "response": "step through all six date/time fields",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer mostly repeats the handbook wording, but it does not clearly show how the learner would apply the policy.",
+        "citation": "\u2022 You must step through all six Date/Time fields to change any one field."
+      }
+    },
+    {
+      "scenario_id": 4,
+      "question_number": 4,
+      "kind": "scenario",
+      "prompt": "You are in the equipment controls and need to complete this step: Press the Enter Key to start the defrost operation. According to the manual, what step comes next in this procedure?",
+      "response": "the defrost light turns on",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "\u2022 The Defrost Symbol will illuminate letting you know defrost is in effect."
+      }
+    },
+    {
+      "scenario_id": 7,
+      "question_number": 4,
+      "kind": "follow_up",
+      "prompt": "Follow-up: Stay in the same procedure. After this step: \"Press the Enter Key to start the defrost operation\", what comes next in the manual? Name the next action as specifically as you can.",
+      "response": "the defrost symbol turns on",
+      "score": {
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: defrost, symbol.",
+        "citation": "\u2022 The Defrost Symbol will illuminate letting you know defrost is in effect."
       }
     },
     {
       "scenario_id": 5,
-      "prompt": "You are choosing PPE for a task with electrical hazards. What should you do right away to keep yourself and others safe?",
-      "response": "I would wear PPE. that is safe for electrical contact.",
+      "question_number": 5,
+      "kind": "scenario",
+      "prompt": "You are following the manual and reach this step: Compressor hums but does not start. a. Call for service. According to the manual, what should you do at this exact step before moving on?",
+      "response": "I need to call for service to be done",
       "score": {
         "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: protective equipment.",
-        "citation": "Employers must select appropriate PPE for their workers"
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: service contact step.",
+        "citation": "6. Compressor hums but does not start. a. Call for service."
       }
     }
   ],
   "debug": {
     "extracted_policy_debug": [
       {
-        "policy": "Ultimately, arc flashes are less likely to occur when equipment is properly maintained. Having recognized the potential hazards related to arc flashes, employers and workers should assess their likelihood and severity.",
-        "category": "equipment",
-        "heading": "W Inadequate or insufficient PPE.",
-        "score": 15,
-        "prompt": "You are preparing to work near equipment with potential arc-flash hazards. What should you do right away to keep yourself and others safe?",
-        "hint": "Handbook cue: focus on safe equipment or PPE use and how you prevent others from being exposed."
+        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d).",
+        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live.",
+        "category": "procedure",
+        "document_type": "procedural_manual",
+        "procedure_kind": "navigation",
+        "heading": "7Q - HOT FOOD - UNLOCKING THE KEYPAD:",
+        "score": 24,
+        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
+        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
       },
       {
-        "policy": "Employers must not rely solely on PPE alone to control hazards when other effective control options are available. PPE can be effective, but only when workers",
-        "category": "equipment",
-        "heading": "W PPE selection and use",
-        "score": 13,
-        "prompt": "You are planning work around an electrical hazard and need controls beyond just PPE. What should you do right away to keep yourself and others safe?",
-        "hint": "Handbook cue: focus on safe equipment or PPE use and how you prevent others from being exposed."
+        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d).",
+        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live.",
+        "category": "procedure",
+        "document_type": "procedural_manual",
+        "procedure_kind": "navigation",
+        "heading": "7S - HOT FOOD - CHANGE THE TEMPERATURE SET POINT (SHORT CUT):",
+        "score": 24,
+        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
+        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
       },
       {
-        "policy": "Before discussing how to identify and mitigate arc flash hazards, two common myths should be addressed. Many workers mistakenly assume that they do not need arc rated or arc flash rated",
-        "category": "safety",
-        "heading": "2 | Protecting Employees from Electric-Arc Flash Hazards",
-        "score": 12,
-        "prompt": "You notice an unsafe condition in the work area. What immediate action should you take? Who should be notified?",
-        "hint": "Handbook cue: focus on the first step that reduces risk and when the situation should be escalated."
+        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d).",
+        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad",
+        "category": "procedure",
+        "document_type": "procedural_manual",
+        "procedure_kind": "navigation",
+        "heading": "4D - TURN OFF TEMPERATURE DISPLAY-MAIN DISPLAY",
+        "score": 23,
+        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
+        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
       },
       {
-        "policy": "Reporting Hazards: Establish a system for workers to report potential arc flash",
-        "category": "safety",
-        "heading": "Concerns",
-        "score": 11,
-        "prompt": "You notice an unsafe condition in the work area. What immediate action should you take? When would you report potential arc flash?",
-        "hint": "Handbook cue: focus on the first step that reduces risk and when the situation should be escalated."
+        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d).",
+        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live.",
+        "category": "procedure",
+        "document_type": "procedural_manual",
+        "procedure_kind": "navigation",
+        "heading": "Unlock Key:",
+        "score": 23,
+        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
+        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
       },
       {
-        "policy": "The use of administrative controls and PPE require",
-        "category": "equipment",
-        "heading": "Hazard Prevention and Control",
-        "score": 11,
-        "prompt": "You are assigned a task that requires the correct protective equipment. What should you do right away to keep yourself and others safe?",
-        "hint": "Handbook cue: focus on safe equipment or PPE use and how you prevent others from being exposed."
+        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d)",
+        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live",
+        "category": "procedure",
+        "document_type": "procedural_manual",
+        "procedure_kind": "navigation",
+        "heading": "7E - ENTER THE CUSTOMER PASSWORD:",
+        "score": 23,
+        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
+        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
       },
       {
-        "policy": "Employers must select appropriate PPE for their workers",
-        "category": "equipment",
-        "heading": "Standards Association Workplace Electrical Safety",
-        "score": 11,
-        "prompt": "You are choosing PPE for a task with electrical hazards. What should you do right away to keep yourself and others safe?",
-        "hint": "Handbook cue: focus on safe equipment or PPE use and how you prevent others from being exposed."
+        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d).",
+        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live.",
+        "category": "procedure",
+        "document_type": "procedural_manual",
+        "procedure_kind": "navigation",
+        "heading": "7F - ENTER THE TECHNICIAN PASSWORD:",
+        "score": 23,
+        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
+        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
+      },
+      {
+        "policy": "\u2022 Press the Enter Key to display the value of the Set Point.",
+        "expected_policy": "\u2022 Use the Plus Key to move to the next parameter (Set Point Differential).",
+        "category": "procedure",
+        "document_type": "procedural_manual",
+        "procedure_kind": "navigation",
+        "heading": "7. MICROPROCESSOR CONTROL (cont\u2019d)",
+        "score": 23,
+        "prompt": "You are in the equipment controls and need to complete this step: Press the Enter Key to display the value of the Set Point. According to the manual, what step comes next in this procedure?",
+        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
+      },
+      {
+        "policy": "\u2022 Use the Plus Key and the Minus Key to move through the Menu System.",
+        "expected_policy": "\u2022 Press the Enter Key to display the value of the selected parameter.",
+        "category": "procedure",
+        "document_type": "procedural_manual",
+        "procedure_kind": "navigation",
+        "heading": "In General:",
+        "score": 23,
+        "prompt": "You are following the manual and reach this step: Use the Plus Key and the Minus Key to move through the Menu System. According to the manual, what should you do next in this procedure?",
+        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
+      },
+      {
+        "policy": "\u2022 Press the Enter Key to display the value of the set point 2.0.",
+        "expected_policy": "\u2022 Press the Modify Key and the value will flash, indicating it is being modified",
+        "category": "procedure",
+        "document_type": "procedural_manual",
+        "procedure_kind": "navigation",
+        "heading": "7I - ADJUST THE SETPOINT DIFFERENTIAL - MENU SYSTEM:",
+        "score": 23,
+        "prompt": "You are in the equipment controls and need to complete this step: Press the Enter Key to display the value of the set point 2.0. According to the manual, what should you do next in this procedure?",
+        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
+      },
+      {
+        "policy": "\u2022 Press the Enter Key to display the value of the temperature units.",
+        "expected_policy": "\u2022 Press the Modify Key and the value will flash, indicating it is being modified.",
+        "category": "procedure",
+        "document_type": "procedural_manual",
+        "procedure_kind": "navigation",
+        "heading": "7J - CHANGE THE TEMPERATURE SCALE - MENU SYSTEM:",
+        "score": 23,
+        "prompt": "You are in the equipment controls and need to complete this step: Press the Enter Key to display the value of the temperature units. According to the manual, what should you do next in this procedure?",
+        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
       }
     ]
   }

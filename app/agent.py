@@ -1,5 +1,5 @@
 from tools.report import build_manager_report, save_report
-from tools.scenarios import build_follow_up_scenario, build_initial_scenarios, extract_policies
+from tools.scenarios import build_follow_up_scenario, build_initial_scenarios, detect_document_type, extract_policies
 from tools.scoring import score_response
 
 
@@ -11,14 +11,18 @@ class TrainingAgent:
         self.max_turns = max_turns
 
     def start_session(self, handbook_text: str, manual_names=None):
-        policies = extract_policies(handbook_text)
+        document_profile = detect_document_type(handbook_text)
+        policies = extract_policies(handbook_text, document_type=document_profile["document_type"])
         scenarios = build_initial_scenarios(policies, max_scenarios=self.max_turns)
         current = scenarios[0] if scenarios else None
 
         return {
             "manual_names": manual_names or [],
+            "document_type": document_profile["document_type"],
+            "document_profile": document_profile,
             "policies": policies[:10],
             "total_primary_turns": len(scenarios),
+            "next_turn_id": len(scenarios) + 1,
             "queue": scenarios[1:],
             "current": current,
             "history": [],
@@ -34,14 +38,19 @@ class TrainingAgent:
             return session, None
 
         scenario = session["current"]
-        score = score_response(response, scenario["policy"], self.rubric)
+        scoring_policy = scenario.get("expected_policy", scenario["policy"])
+        score = score_response(response, scoring_policy, self.rubric)
+        turn_id = scenario["id"]
+        question_number = self._count_primary_turns(session) + (0 if scenario.get("kind") == "follow_up" else 1)
         session["history"].append(
             {
-                "scenario_id": scenario["id"],
+                "scenario_id": turn_id,
+                "question_number": question_number,
                 "kind": scenario.get("kind", "scenario"),
                 "category": scenario["category"],
                 "prompt": scenario["prompt"],
                 "policy": scenario["policy"],
+                "expected_policy": scoring_policy,
                 "response": response,
                 "score": score,
             }
@@ -60,8 +69,9 @@ class TrainingAgent:
         )
 
         if should_follow_up:
-            next_id = max(item["scenario_id"] for item in session["history"]) + 1
+            next_id = session.get("next_turn_id", turn_id + 1)
             session["current"] = build_follow_up_scenario(scenario, next_id)
+            session["next_turn_id"] = next_id + 1
             message = "The agent wants one follow-up response before moving on."
         elif session["queue"] and remaining_primary_turns > 0:
             session["current"] = session["queue"].pop(0)
@@ -78,6 +88,8 @@ class TrainingAgent:
                 results.append(
                     {
                         "scenario_id": item["scenario_id"],
+                        "question_number": item.get("question_number"),
+                        "kind": item.get("kind", "scenario"),
                         "prompt": item["prompt"],
                         "response": item["response"],
                         "score": item["score"],
@@ -89,6 +101,7 @@ class TrainingAgent:
                 learner_name=learner_name,
                 focus_areas=session["weak_categories"],
                 manual_names=session.get("manual_names", []),
+                document_type=session.get("document_type"),
                 extracted_policy_debug=session.get("policies", []),
             )
             path = save_report(report, reports_dir="app/reports")

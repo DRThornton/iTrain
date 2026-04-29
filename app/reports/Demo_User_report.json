@@ -1,217 +1,202 @@
 {
   "learner_name": "Demo User",
-  "completed_at": "2026-04-20T02:38:32.323327Z",
+  "completed_at": "2026-04-28T22:06:56.141682Z",
   "manual_names": [
-    "G-Series Ref_Frz_Hot Food Reach-In Pass-thru Owner Man TR35748 (02-24).pdf"
+    "sample_handbook.txt"
   ],
-  "document_type": "procedural_manual",
+  "document_type": "safety_handbook",
   "summary": {
-    "good": 4,
-    "neutral": 3,
-    "bad": 0
+    "good": 5,
+    "neutral": 1,
+    "bad": 4
   },
-  "weighted_score": 8,
-  "recommendation": "pass",
+  "weighted_score": -2,
+  "recommendation": "fail",
   "focus_areas": [
-    "procedure"
+    "reporting",
+    "sanitation",
+    "equipment",
+    "policy",
+    "customer_service"
   ],
   "results": [
     {
       "scenario_id": 1,
       "question_number": 1,
       "kind": "scenario",
-      "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
-      "response": "the unlock led will turn on",
+      "prompt": "You notice an unsafe act or unsafe condition on the project. Who needs to be informed, and what details should you report?",
+      "response": "I would ignore it",
+      "score": {
+        "label": "bad",
+        "rationale": "The answer includes potentially unsafe or incorrect action(s): ignore.",
+        "citation": "4. Unsafe actions must be reported to a supervisor immediately."
+      }
+    },
+    {
+      "scenario_id": 6,
+      "question_number": 1,
+      "kind": "follow_up",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"Unsafe actions must be reported to a supervisor immediately\". Who should be informed, and what details would you communicate so the issue is handled correctly?",
+      "response": "I would tell my supervisor",
       "score": {
         "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: keypad-led step.",
-        "citation": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live."
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: report.",
+        "citation": "4. Unsafe actions must be reported to a supervisor immediately."
       }
     },
     {
       "scenario_id": 2,
       "question_number": 2,
       "kind": "scenario",
-      "prompt": "You are in the equipment controls and need to complete this step: Press the Enter Key to display the value of the Set Point. According to the manual, what step comes next in this procedure?",
-      "response": "use the plus key",
+      "prompt": "You notice spilled material and clutter creating a hazard in an active work area. What should you do first to control the hazard and keep the area safe?",
+      "response": "I would hide it.",
+      "score": {
+        "label": "bad",
+        "rationale": "The answer includes potentially unsafe or incorrect action(s): hide instead of reporting the issue.",
+        "citation": "1. Employees must clean spills immediately or block the area and report the hazard."
+      }
+    },
+    {
+      "scenario_id": 7,
+      "question_number": 2,
+      "kind": "follow_up",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"Employees must clean spills immediately or block the area and report the hazard\". What exact cleanup or sanitation step would you take first, and who would you notify if the issue could affect others?",
+      "response": "I would block the area and report the hazard.",
       "score": {
         "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: plus-key step.",
-        "citation": "\u2022 Use the Plus Key to move to the next parameter (Set Point Differential)."
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: block the area, report, cleanup step.",
+        "citation": "1. Employees must clean spills immediately or block the area and report the hazard."
       }
     },
     {
       "scenario_id": 3,
       "question_number": 3,
       "kind": "scenario",
-      "prompt": "You are following the manual and reach this step: When a Date/Time field is acceptable, press the Enter Key to use the value. According to the manual, what step comes next in this procedure?",
-      "response": "you must step through all date/time fields to change any one field",
+      "prompt": "You find a sharp tool left out in the work area. What should you do right away, and how do you keep others safe?",
+      "response": "i would leave it",
       "score": {
-        "label": "neutral",
-        "rationale": "The answer mostly repeats the handbook wording, but it does not clearly show how the learner would apply the policy.",
-        "citation": "\u2022 You must step through all six Date/Time fields to change any one field."
+        "label": "bad",
+        "rationale": "The answer includes potentially unsafe or incorrect action(s): leave it.",
+        "citation": "6. Employees must not leave sharp tools unattended."
       }
     },
     {
-      "scenario_id": 6,
+      "scenario_id": 8,
       "question_number": 3,
       "kind": "follow_up",
-      "prompt": "Follow-up: Stay in the same procedure. After this step: \"When a Date/Time field is acceptable, press the Enter Key to use the value\", what comes next in the manual? Name the next action as specifically as you can.",
-      "response": "step through all six date/time fields",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"Employees must not leave sharp tools unattended\". What would you do with the equipment right away to keep others safe?",
+      "response": "I would pick it up",
       "score": {
-        "label": "neutral",
-        "rationale": "The answer mostly repeats the handbook wording, but it does not clearly show how the learner would apply the policy.",
-        "citation": "\u2022 You must step through all six Date/Time fields to change any one field."
+        "label": "good",
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: secure sharp tool.",
+        "citation": "6. Employees must not leave sharp tools unattended."
       }
     },
     {
       "scenario_id": 4,
       "question_number": 4,
       "kind": "scenario",
-      "prompt": "You are in the equipment controls and need to complete this step: Press the Enter Key to start the defrost operation. According to the manual, what step comes next in this procedure?",
-      "response": "the defrost light turns on",
+      "prompt": "Someone asks you to make a refund decision you are not sure about. You are not fully sure what the rule allows. What should you do before moving forward?",
+      "response": "I would tell them to guess at it.",
       "score": {
-        "label": "neutral",
-        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
-        "citation": "\u2022 The Defrost Symbol will illuminate letting you know defrost is in effect."
+        "label": "bad",
+        "rationale": "The answer includes potentially unsafe or incorrect action(s): guess.",
+        "citation": "3. Employees must never guess about refund policy. They should check the policy or ask a manager."
       }
     },
     {
-      "scenario_id": 7,
+      "scenario_id": 9,
       "question_number": 4,
       "kind": "follow_up",
-      "prompt": "Follow-up: Stay in the same procedure. After this step: \"Press the Enter Key to start the defrost operation\", what comes next in the manual? Name the next action as specifically as you can.",
-      "response": "the defrost symbol turns on",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"Employees must never guess about refund policy. They should check the policy or ask a manager\". How would you verify the correct policy before acting, and what would you tell the customer or coworker in the meantime?",
+      "response": "I would not guess and would look it up.",
       "score": {
         "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: defrost, symbol.",
-        "citation": "\u2022 The Defrost Symbol will illuminate letting you know defrost is in effect."
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: refund-policy check.",
+        "citation": "3. Employees must never guess about refund policy. They should check the policy or ask a manager."
       }
     },
     {
       "scenario_id": 5,
       "question_number": 5,
       "kind": "scenario",
-      "prompt": "You are following the manual and reach this step: Compressor hums but does not start. a. Call for service. According to the manual, what should you do at this exact step before moving on?",
-      "response": "I need to call for service to be done",
+      "prompt": "A customer is upset. How would you handle the situation without guessing or creating more risk?",
+      "response": "I would run away",
+      "score": {
+        "label": "neutral",
+        "rationale": "The answer is not clearly unsafe, but it does not strongly show the expected policy-based action.",
+        "citation": "2. If a customer is upset, remain calm, listen respectfully, and contact a supervisor if needed."
+      }
+    },
+    {
+      "scenario_id": 10,
+      "question_number": 5,
+      "kind": "follow_up",
+      "prompt": "Follow-up: Your earlier answer needs more policy-specific detail. The handbook guidance here is: \"If a customer is upset, remain calm, listen respectfully, and contact a supervisor if needed\". How would you help the customer while making sure you follow the correct procedure instead of guessing?",
+      "response": "I would listen and see what is wrong. I would tell my supervisor if it gets too out of hand.",
       "score": {
         "label": "good",
-        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: service contact step.",
-        "citation": "6. Compressor hums but does not start. a. Call for service."
+        "rationale": "The answer aligns with the policy and includes relevant actions/concepts: listen, supervisor.",
+        "citation": "2. If a customer is upset, remain calm, listen respectfully, and contact a supervisor if needed."
       }
     }
   ],
   "debug": {
     "extracted_policy_debug": [
       {
-        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d).",
-        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live.",
-        "category": "procedure",
-        "document_type": "procedural_manual",
-        "procedure_kind": "navigation",
-        "heading": "7Q - HOT FOOD - UNLOCKING THE KEYPAD:",
-        "score": 24,
-        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
-        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
+        "policy": "4. Unsafe actions must be reported to a supervisor immediately.",
+        "expected_policy": "4. Unsafe actions must be reported to a supervisor immediately.",
+        "category": "reporting",
+        "document_type": "safety_handbook",
+        "procedure_kind": null,
+        "heading": "Retail Store Safety and Customer Service Handbook",
+        "score": 20,
+        "prompt": "You notice an unsafe act or unsafe condition on the project. Who needs to be informed, and what details should you report?",
+        "hint": "Handbook cue: focus on who needs to be informed and what key facts should be communicated."
       },
       {
-        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d).",
-        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live.",
-        "category": "procedure",
-        "document_type": "procedural_manual",
-        "procedure_kind": "navigation",
-        "heading": "7S - HOT FOOD - CHANGE THE TEMPERATURE SET POINT (SHORT CUT):",
-        "score": 24,
-        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
-        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
+        "policy": "1. Employees must clean spills immediately or block the area and report the hazard.",
+        "expected_policy": "1. Employees must clean spills immediately or block the area and report the hazard.",
+        "category": "sanitation",
+        "document_type": "safety_handbook",
+        "procedure_kind": null,
+        "heading": "Retail Store Safety and Customer Service Handbook",
+        "score": 18,
+        "prompt": "You notice spilled material and clutter creating a hazard in an active work area. What should you do first to control the hazard and keep the area safe?",
+        "hint": "Handbook cue: focus on controlling the hazard, cleaning it correctly, and protecting other people nearby."
       },
       {
-        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d).",
-        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad",
-        "category": "procedure",
-        "document_type": "procedural_manual",
-        "procedure_kind": "navigation",
-        "heading": "4D - TURN OFF TEMPERATURE DISPLAY-MAIN DISPLAY",
-        "score": 23,
-        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
-        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
+        "policy": "6. Employees must not leave sharp tools unattended.",
+        "expected_policy": "6. Employees must not leave sharp tools unattended.",
+        "category": "equipment",
+        "document_type": "safety_handbook",
+        "procedure_kind": null,
+        "heading": "Retail Store Safety and Customer Service Handbook",
+        "score": 14,
+        "prompt": "You find a sharp tool left out in the work area. What should you do right away, and how do you keep others safe?",
+        "hint": "Handbook cue: focus on safe equipment or PPE use and how you prevent others from being exposed."
       },
       {
-        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d).",
-        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live.",
-        "category": "procedure",
-        "document_type": "procedural_manual",
-        "procedure_kind": "navigation",
-        "heading": "Unlock Key:",
-        "score": 23,
-        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
-        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
+        "policy": "3. Employees must never guess about refund policy. They should check the policy or ask a manager.",
+        "expected_policy": "3. Employees must never guess about refund policy. They should check the policy or ask a manager.",
+        "category": "policy",
+        "document_type": "safety_handbook",
+        "procedure_kind": null,
+        "heading": "Retail Store Safety and Customer Service Handbook",
+        "score": 12,
+        "prompt": "Someone asks you to make a refund decision you are not sure about. You are not fully sure what the rule allows. What should you do before moving forward?",
+        "hint": "Handbook cue: focus on checking the rule before acting instead of improvising."
       },
       {
-        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d)",
-        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live",
-        "category": "procedure",
-        "document_type": "procedural_manual",
-        "procedure_kind": "navigation",
-        "heading": "7E - ENTER THE CUSTOMER PASSWORD:",
-        "score": 23,
-        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
-        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
-      },
-      {
-        "policy": "\u2022 Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d).",
-        "expected_policy": "\u2022 The Keypad Unlock LED will turn on to indicate the keypad is now live.",
-        "category": "procedure",
-        "document_type": "procedural_manual",
-        "procedure_kind": "navigation",
-        "heading": "7F - ENTER THE TECHNICIAN PASSWORD:",
-        "score": 23,
-        "prompt": "You are in the equipment controls and need to complete this step: Press the Unlock Key twice within a second in order to unlock the keypad (think \u201ctap-tap\u201d). According to the manual, what step comes next in this procedure?",
-        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
-      },
-      {
-        "policy": "\u2022 Press the Enter Key to display the value of the Set Point.",
-        "expected_policy": "\u2022 Use the Plus Key to move to the next parameter (Set Point Differential).",
-        "category": "procedure",
-        "document_type": "procedural_manual",
-        "procedure_kind": "navigation",
-        "heading": "7. MICROPROCESSOR CONTROL (cont\u2019d)",
-        "score": 23,
-        "prompt": "You are in the equipment controls and need to complete this step: Press the Enter Key to display the value of the Set Point. According to the manual, what step comes next in this procedure?",
-        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
-      },
-      {
-        "policy": "\u2022 Use the Plus Key and the Minus Key to move through the Menu System.",
-        "expected_policy": "\u2022 Press the Enter Key to display the value of the selected parameter.",
-        "category": "procedure",
-        "document_type": "procedural_manual",
-        "procedure_kind": "navigation",
-        "heading": "In General:",
-        "score": 23,
-        "prompt": "You are following the manual and reach this step: Use the Plus Key and the Minus Key to move through the Menu System. According to the manual, what should you do next in this procedure?",
-        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
-      },
-      {
-        "policy": "\u2022 Press the Enter Key to display the value of the set point 2.0.",
-        "expected_policy": "\u2022 Press the Modify Key and the value will flash, indicating it is being modified",
-        "category": "procedure",
-        "document_type": "procedural_manual",
-        "procedure_kind": "navigation",
-        "heading": "7I - ADJUST THE SETPOINT DIFFERENTIAL - MENU SYSTEM:",
-        "score": 23,
-        "prompt": "You are in the equipment controls and need to complete this step: Press the Enter Key to display the value of the set point 2.0. According to the manual, what should you do next in this procedure?",
-        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
-      },
-      {
-        "policy": "\u2022 Press the Enter Key to display the value of the temperature units.",
-        "expected_policy": "\u2022 Press the Modify Key and the value will flash, indicating it is being modified.",
-        "category": "procedure",
-        "document_type": "procedural_manual",
-        "procedure_kind": "navigation",
-        "heading": "7J - CHANGE THE TEMPERATURE SCALE - MENU SYSTEM:",
-        "score": 23,
-        "prompt": "You are in the equipment controls and need to complete this step: Press the Enter Key to display the value of the temperature units. According to the manual, what should you do next in this procedure?",
-        "hint": "Manual cue: focus on the next step, required setup details, and what the manual says to check before continuing."
+        "policy": "2. If a customer is upset, remain calm, listen respectfully, and contact a supervisor if needed.",
+        "expected_policy": "2. If a customer is upset, remain calm, listen respectfully, and contact a supervisor if needed.",
+        "category": "customer_service",
+        "document_type": "safety_handbook",
+        "procedure_kind": null,
+        "heading": "Retail Store Safety and Customer Service Handbook",
+        "score": 7,
+        "prompt": "A customer is upset. How would you handle the situation without guessing or creating more risk?",
+        "hint": "Handbook cue: focus on helping the customer without guessing or creating additional risk."
       }
     ]
   }

@@ -2,6 +2,8 @@ import streamlit as st
 
 from agent import TrainingAgent
 from tools.ingest import load_handbook
+from tools.report import render_manager_summary_markdown
+from tools.runtime import resource_path
 from tools.scoring import load_rubric
 
 
@@ -47,7 +49,7 @@ def turn_label(item) -> str:
 
 
 def load_default_handbook() -> str:
-    with open("app/data/sample_handbook.txt", "r", encoding="utf-8") as f:
+    with resource_path("app", "data", "sample_handbook.txt").open("r", encoding="utf-8") as f:
         return f.read()
 
 
@@ -56,7 +58,7 @@ with st.sidebar:
     learner_name = st.text_input("Learner name", value=st.session_state.learner_name)
     uploaded_handbook = st.file_uploader("Upload handbook (.txt or .pdf)", type=["txt", "pdf"])
     use_sample_handbook = st.checkbox("Use bundled sample handbook (demo mode)", value=False)
-    rubric_path = "app/data/sample_rubric.json"
+    rubric_path = str(resource_path("app", "data", "sample_rubric.json"))
     show_debug = st.checkbox("Show extracted policy debug", value=False)
 
     if st.button("Load Training Module"):
@@ -171,8 +173,14 @@ with tabs[1]:
     else:
         report = st.session_state.report
 
+        summary = report["summary"]
         st.write("### Summary")
-        st.json(report["summary"])
+        metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
+        metric_col1.metric("Good", summary["good"])
+        metric_col2.metric("Neutral", summary["neutral"])
+        metric_col3.metric("Bad", summary["bad"])
+        metric_col4.metric("Weighted Score", report["weighted_score"])
+
         if report.get("manual_names"):
             st.write(f"**Manuals used:** {', '.join(report['manual_names'])}")
         if report.get("document_type"):
@@ -180,17 +188,37 @@ with tabs[1]:
         st.write(f"**Recommendation:** {report['recommendation']}")
         if report.get("focus_areas"):
             st.write(f"**Focus areas:** {', '.join(report['focus_areas'])}")
-        st.write(f"**Saved report:** `{report['saved_to']}`")
+        saved_to = report.get("saved_to", {})
+        if isinstance(saved_to, dict):
+            if saved_to.get("json"):
+                st.write(f"**Saved JSON report:** `{saved_to['json']}`")
+            if saved_to.get("markdown"):
+                st.write(f"**Saved summary report:** `{saved_to['markdown']}`")
+        elif saved_to:
+            st.write(f"**Saved report:** `{saved_to}`")
+
+        results = report["results"]
+        follow_up_count = sum(1 for item in results if item.get("kind") == "follow_up")
+        st.write("### Run Highlights")
+        st.write(f"**Questions answered:** {len({item.get('question_number') for item in results if item.get('question_number') is not None})}")
+        st.write(f"**Follow-ups needed:** {follow_up_count}")
+        if results:
+            good_rate = round((summary["good"] / len(results)) * 100)
+            st.write(f"**Good response rate:** {good_rate}%")
+
+        st.write("### Saved Summary Preview")
+        st.markdown(render_manager_summary_markdown(report))
 
         st.write("### Detailed Results")
-        for item in report["results"]:
+        for item in results:
             label = turn_label(item)
-            st.markdown(f"#### {label}")
-            st.write(f"**Learner response:** {item['response']}")
-            st.write(f"**Score:** {item['score']['label']}")
-            st.write(f"**Rationale:** {item['score']['rationale']}")
-            st.write(f"**Handbook citation:** {item['score']['citation']}")
+            with st.expander(f"{label} - {item['score']['label']}", expanded=item["score"]["label"] != "good"):
+                st.write(f"**Prompt:** {item['prompt']}")
+                st.write(f"**Learner response:** {item['response']}")
+                st.write(f"**Score:** {item['score']['label']}")
+                st.write(f"**Rationale:** {item['score']['rationale']}")
+                st.write(f"**Handbook citation:** {item['score']['citation']}")
 
-        if report.get("debug", {}).get("extracted_policy_debug"):
+        if show_debug and report.get("debug", {}).get("extracted_policy_debug"):
             st.write("### Debug Report")
             st.json(report["debug"])

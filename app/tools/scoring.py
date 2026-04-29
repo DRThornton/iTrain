@@ -13,6 +13,7 @@ UNSAFE_RESPONSE_PATTERNS = [
     (r"\bkeep working\b", "keep working without correcting the hazard"),
     (r"\b(?:can't|cannot) hurt (?:us|me|them)\b", "dismiss the hazard as harmless"),
     (r"\b(?:do not|don't) need to tell\b", "refuse to report the issue"),
+    (r"\bnot tell anyone\b", "refuse to report the issue"),
     (r"\bwhat they don't know can't hurt them\b", "intentionally avoid reporting the issue"),
     (r"\b(?:do not|don't) need (?:gloves|ppe|protective equipment)\b", "refuse required protective equipment"),
     (r"\bgloves are for girls\b", "refuse required protective equipment"),
@@ -24,6 +25,11 @@ UNSAFE_RESPONSE_PATTERNS = [
     (r"\bget rid of the equipment\b", "discard equipment without following the procedure"),
     (r"\bthrow (?:it|the equipment) away\b", "discard equipment without following the procedure"),
     (r"\bbreak it\b", "damage equipment instead of following the procedure"),
+    (r"\b(?:will not|won't|do not|don't)\s+clean\b", "refuse to clean or control the hazard"),
+    (r"\b(?:will not|won't|do not|don't)\s+listen\b", "refuse to listen respectfully"),
+    (r"\byell at (?:them|the customer|customers|him|her)\b", "escalate the customer situation instead of staying calm"),
+    (r"\brefund no matter what\b", "approve a refund without checking the policy"),
+    (r"\bfor sure get a refund\b", "approve a refund without checking the policy"),
 ]
 
 
@@ -60,6 +66,16 @@ def detect_policy_good_matches(response_lower: str, policy_lower: str):
             ["separate two similar pieces of equipment", "park each at a different spot", "do not use them at the same time"],
             ["different spots", "park them in different spots", "separate them", "park them apart", "do not use them at the same time"],
             "separate equipment",
+        ),
+        (
+            ["sharp tools unattended", "leave sharp tools unattended"],
+            ["put it away", "put the tool away", "put the tool up", "store the tool safely", "secure the tool", "remove the tool from the area", "pick it up", "pick the tool up"],
+            "secure sharp tool",
+        ),
+        (
+            ["guess about refund policy", "check the policy", "ask a manager"],
+            ["look it up", "look up the policy", "check the policy", "ask a manager", "check with a manager", "verify the policy"],
+            "refund-policy check",
         ),
         (
             ["tight quarters", "provide a second person"],
@@ -137,14 +153,21 @@ def detect_policy_good_matches(response_lower: str, policy_lower: str):
             "keypad-led step",
         ),
         (
+            ["date/time field", "all six date/time fields", "change any one field"],
+            ["step through all six date/time fields", "all six date/time fields", "step through the date/time fields"],
+            "date-time step",
+        ),
+        (
             ["defrost symbol", "defrost is in effect"],
-            ["defrost symbol will illuminate", "defrost symbol lights up", "defrost is in effect", "defrost symbol will light up", "defrost light will light up", "defrost light will illuminate"],
+            ["defrost symbol will illuminate", "defrost symbol lights up", "defrost is in effect", "defrost symbol will light up", "defrost light will light up", "defrost light will illuminate", "defrost light turns on", "defrost symbol turns on"],
             "defrost-indicator step",
         ),
     ]
 
     for policy_terms, response_terms, label in policy_synonyms:
-        if any(term in policy_lower for term in policy_terms) and any(term in response_lower for term in response_terms):
+        if any(term in policy_lower for term in policy_terms) and any(
+            term in response_lower and not phrase_is_negated(response_lower, term) for term in response_terms
+        ):
             matches.append(label)
 
     return matches
@@ -186,12 +209,71 @@ def detect_manual_bad_matches(response_lower: str, policy_lower: str):
     return matches
 
 
+def detect_policy_bad_matches(response_lower: str, policy_lower: str):
+    matches = []
+
+    contradiction_patterns = [
+        (
+            ["reported to a supervisor immediately", "report to a supervisor"],
+            [
+                r"\bnot tell the supervisor\b",
+                r"\bnot report (?:it|this|the issue)\b",
+                r"\bhandle it myself\b",
+            ],
+            "skip reporting the unsafe act to a supervisor",
+        ),
+        (
+            ["sharp tools unattended", "leave sharp tools unattended"],
+            [
+                r"\bleave the sharp tool where it is\b",
+                r"\bleave the tool where it is\b",
+                r"\bleave it there\b",
+            ],
+            "leave the sharp tool unattended",
+        ),
+        (
+            ["guess about refund policy", "check the policy", "ask a manager"],
+            [
+                r"\bwithout checking the policy\b",
+                r"\bwithout checking anything\b",
+                r"\bnot check the policy\b",
+                r"\bjust give (?:them|the customer) a refund\b",
+                r"\bgive (?:them|the customer) a refund without\b",
+                r"\bapprove the refund without\b",
+                r"\brefund no matter what\b",
+                r"\bfor sure get a refund\b",
+            ],
+            "approve a refund without checking the policy",
+        ),
+        (
+            ["remain calm", "listen respectfully", "contact a supervisor"],
+            [
+                r"\bkeep yelling\b",
+                r"\byell until they leave\b",
+                r"\bnot listen\b",
+            ],
+            "escalate the customer situation instead of staying calm",
+        ),
+    ]
+
+    for policy_terms, bad_patterns, label in contradiction_patterns:
+        if any(term in policy_lower for term in policy_terms) and any(
+            re.search(pattern, response_lower) for pattern in bad_patterns
+        ):
+            matches.append(label)
+
+    return matches
+
+
 def phrase_is_negated(response_lower: str, phrase: str) -> bool:
     escaped = re.escape(phrase.lower())
     negation_patterns = [
         rf"\bnever\s+{escaped}\b",
+        rf"\bnot\s+{escaped}\b",
         rf"\bdo not\s+{escaped}\b",
         rf"\bdon't\s+{escaped}\b",
+        rf"\bwill not\s+{escaped}\b",
+        rf"\bwon't\s+{escaped}\b",
         rf"\bshould not\s+{escaped}\b",
         rf"\bmust not\s+{escaped}\b",
         rf"\bwithout\s+{escaped}(?:ing)?\b",
@@ -258,11 +340,11 @@ def has_procedural_application_language(response_lower: str) -> bool:
             r"\b(i|i'd|i would|i will|we|we'd|we would|we will)\b", response_lower
         )
         or re.search(
-            r"^(?:clean|use|place|put|remove|disconnect|loosen|lift|select|choose|press|enter|connect|gather|assemble|check|illuminate|flash|turn)\b",
+            r"^(?:clean|use|place|put|remove|disconnect|loosen|lift|select|choose|press|enter|connect|gather|assemble|check|illuminate|flash|turn|step)\b",
             response_lower.strip(),
         )
         or re.search(
-            r"\b(?:clean|use|place|put|remove|disconnect|loosen|lift|select|choose|press|enter|connect|gather|assemble|check|illuminate|flash|turn on|lights up)\b",
+            r"\b(?:clean|use|place|put|remove|disconnect|loosen|lift|select|choose|press|enter|connect|gather|assemble|check|illuminate|flash|turn on|turns on|lights up|step through)\b",
             response_lower,
         )
     )
@@ -273,6 +355,37 @@ def is_short_procedural_answer(response_lower: str) -> bool:
     if not words:
         return False
     return len(words) <= 12 and has_procedural_application_language(response_lower)
+
+
+def policy_looks_procedural(policy_lower: str) -> bool:
+    if re.match(r"^\s*[\u2022\-]?\s*\d+[\).\s-]*", policy_lower):
+        return True
+
+    procedural_markers = [
+        "manual",
+        "screen",
+        "touch screen",
+        "date/time",
+        "field",
+        "parameter",
+        "set point",
+        "plus key",
+        "enter key",
+        "modify key",
+        "unlock key",
+        "keypad",
+        "defrost symbol",
+        "terminal",
+        "wire",
+        "thermostat",
+        "access point",
+        "wi-fi",
+        "wifi",
+        "call for service",
+        "use a soft",
+        "clean the screen",
+    ]
+    return any(marker in policy_lower for marker in procedural_markers)
 
 
 def score_response(response: str, policy: str, rubric: dict):
@@ -287,6 +400,9 @@ def score_response(response: str, policy: str, rubric: dict):
             matched_good.append(phrase)
 
     matched_bad.extend(detect_rubric_bad_matches(response_lower, rubric))
+    matched_bad.extend(
+        phrase for phrase in detect_policy_bad_matches(response_lower, policy_lower) if phrase not in matched_bad
+    )
     matched_bad.extend(
         phrase for phrase in detect_manual_bad_matches(response_lower, policy_lower) if phrase not in matched_bad
     )
@@ -319,6 +435,7 @@ def score_response(response: str, policy: str, rubric: dict):
 
     parroting_policy = is_policy_parroting(response, policy)
     procedural_application = has_procedural_application_language(response_lower)
+    procedural_policy = policy_looks_procedural(policy_lower)
 
     if not response.strip():
         label = "bad"
@@ -326,7 +443,9 @@ def score_response(response: str, policy: str, rubric: dict):
     elif matched_bad:
         label = "bad"
         rationale = f"The answer includes potentially unsafe or incorrect action(s): {', '.join(matched_bad)}."
-    elif parroting_policy and not (matched_good and (procedural_application or is_short_procedural_answer(response_lower))):
+    elif parroting_policy and not (
+        procedural_policy and matched_good and (procedural_application or is_short_procedural_answer(response_lower))
+    ):
         label = "neutral"
         rationale = "The answer mostly repeats the handbook wording, but it does not clearly show how the learner would apply the policy."
     elif matched_good or len(overlap) >= 2:

@@ -91,6 +91,26 @@ def test_score_response_marks_defrost_indicator_answer_as_good():
     assert score["label"] == "good"
 
 
+def test_score_response_marks_date_time_step_answer_as_good():
+    score = score_response(
+        "step through all six date/time fields",
+        "You must step through all six Date/Time fields to change any one field.",
+        {},
+    )
+
+    assert score["label"] == "good"
+
+
+def test_score_response_marks_defrost_light_turns_on_answer_as_good():
+    score = score_response(
+        "the defrost light turns on",
+        "The Defrost Symbol will illuminate letting you know defrost is in effect.",
+        {},
+    )
+
+    assert score["label"] == "good"
+
+
 def test_training_agent_assigns_unique_follow_up_turn_ids():
     rubric = {}
     agent = TrainingAgent(rubric=rubric, max_turns=2)

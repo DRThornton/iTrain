@@ -104,7 +104,7 @@ class TrainingAgent:
                 document_type=session.get("document_type"),
                 extracted_policy_debug=session.get("policies", []),
             )
-            path = save_report(report, reports_dir="app/reports")
-            report["saved_to"] = path
+            paths = save_report(report, reports_dir="app/reports")
+            report["saved_to"] = paths
 
         return session, {"score": score, "message": message, "report": report}

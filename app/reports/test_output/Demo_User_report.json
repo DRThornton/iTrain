@@ -1,0 +1,29 @@
+{
+  "learner_name": "Demo User",
+  "completed_at": "2026-04-28T23:43:39.778505Z",
+  "manual_names": [],
+  "document_type": "safety_handbook",
+  "summary": {
+    "good": 1,
+    "neutral": 0,
+    "bad": 0
+  },
+  "weighted_score": 2,
+  "recommendation": "review",
+  "focus_areas": [],
+  "results": [
+    {
+      "scenario_id": 1,
+      "prompt": "prompt",
+      "response": "response",
+      "score": {
+        "label": "good",
+        "rationale": "why",
+        "citation": "policy"
+      }
+    }
+  ],
+  "debug": {
+    "extracted_policy_debug": []
+  }
+}

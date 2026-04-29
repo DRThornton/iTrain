@@ -1,0 +1,104 @@
+{
+  "cases": [
+    {
+      "id": "safety_reporting_good",
+      "kind": "scoring",
+      "tags": ["safety", "reporting"],
+      "policy": "Immediately report all accidents, incidents, near misses, property damage, and potentially unsafe conditions.",
+      "response": "I would report the near miss to my supervisor right away.",
+      "rubric": {
+        "must_mention_any": ["report to supervisor"],
+        "bad_actions": ["ignore", "guess", "leave it"]
+      },
+      "expected": "good"
+    },
+    {
+      "id": "safety_copy_paste_neutral",
+      "kind": "scoring",
+      "tags": ["safety", "parroting"],
+      "policy": "Employees must clean spills immediately or block the area and report the hazard.",
+      "response": "Employees must clean spills immediately or block the area and report the hazard.",
+      "rubric": {
+        "must_mention_any": ["clean spill", "block the area"],
+        "bad_actions": ["ignore", "guess", "leave it"]
+      },
+      "expected": "neutral"
+    },
+    {
+      "id": "safety_bad_guess",
+      "kind": "scoring",
+      "tags": ["safety", "unsafe"],
+      "policy": "Employees must never guess about refund policy. They should check the policy or ask a manager.",
+      "response": "I would guess and give the customer a refund.",
+      "rubric": {
+        "must_mention_any": ["ask a manager"],
+        "bad_actions": ["ignore", "guess", "leave it"]
+      },
+      "expected": "bad"
+    },
+    {
+      "id": "manual_g_wire_next_step_good",
+      "kind": "scoring",
+      "tags": ["manual", "sequence"],
+      "policy": "5. Place the G wire on terminal C.",
+      "response": "Place the G wire on terminal C.",
+      "rubric": {},
+      "expected": "good"
+    },
+    {
+      "id": "manual_date_time_step_good",
+      "kind": "scoring",
+      "tags": ["manual", "sequence"],
+      "policy": "You must step through all six Date/Time fields to change any one field.",
+      "response": "step through all six date/time fields",
+      "rubric": {},
+      "expected": "good"
+    },
+    {
+      "id": "manual_defrost_indicator_good",
+      "kind": "scoring",
+      "tags": ["manual", "indicator"],
+      "policy": "The Defrost Symbol will illuminate letting you know defrost is in effect.",
+      "response": "the defrost light turns on",
+      "rubric": {},
+      "expected": "good"
+    },
+    {
+      "id": "manual_bad_cleaning_action",
+      "kind": "scoring",
+      "tags": ["manual", "contradiction"],
+      "policy": "Use a soft cloth without solvents or abrasive cleaners.",
+      "response": "I would use abrasive cleaners to scrub it down fast.",
+      "rubric": {},
+      "expected": "bad"
+    },
+    {
+      "id": "detect_procedural_manual",
+      "kind": "document_type",
+      "tags": ["classification", "manual"],
+      "text": "Johnson Controls Thermostat User Manual\nTouch Screen Calibration\nUse a soft, damp cloth to clean the screen.\nIf you would like to install the JCI thermostat using only 4 wires when 5 are required, follow the directions below.",
+      "expected": "procedural_manual"
+    },
+    {
+      "id": "detect_safety_handbook",
+      "kind": "document_type",
+      "tags": ["classification", "safety"],
+      "text": "SAFETY PROGRAM\nEmployees must report unsafe conditions to their supervisor immediately.\nEmployees must wear the required personal protective equipment.",
+      "expected": "safety_handbook"
+    },
+    {
+      "id": "reject_truncated_manual_fragment",
+      "kind": "policy_line",
+      "tags": ["extraction", "manual"],
+      "text": "When finished, a dialog box will appear confirming the successful",
+      "expected": false
+    },
+    {
+      "id": "accept_actionable_manual_step",
+      "kind": "policy_line",
+      "tags": ["extraction", "manual"],
+      "text": "Use a soft, damp cloth to clean the screen.",
+      "expected": true
+    }
+  ]
+}

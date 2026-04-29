@@ -194,3 +194,123 @@ def test_score_response_accepts_parking_apart_for_separation_policy():
     )
 
     assert score["label"] == "good"
+
+
+def test_score_response_marks_refusing_cleanup_as_bad():
+    score = score_response(
+        "I will not clean it.",
+        "Employees must clean spills immediately or block the area and report the hazard.",
+        {},
+    )
+
+    assert score["label"] == "bad"
+
+
+def test_score_response_marks_refusing_to_report_hazard_as_bad():
+    score = score_response(
+        "I would make the hazard worse and not tell anyone.",
+        "Employees must clean spills immediately or block the area and report the hazard.",
+        {},
+    )
+
+    assert score["label"] == "bad"
+
+
+def test_score_response_marks_put_it_away_as_good_for_sharp_tool_policy():
+    score = score_response(
+        "I will put it away.",
+        "Employees must not leave sharp tools unattended.",
+        {},
+    )
+
+    assert score["label"] == "good"
+
+
+def test_score_response_marks_pick_it_up_as_good_for_sharp_tool_policy():
+    score = score_response(
+        "I would pick it up.",
+        "Employees must not leave sharp tools unattended.",
+        {},
+    )
+
+    assert score["label"] == "good"
+
+
+def test_score_response_marks_guessing_refund_decision_as_bad():
+    score = score_response(
+        "I will tell them they can for sure get a refund.",
+        "Employees must never guess about refund policy. They should check the policy or ask a manager.",
+        {},
+    )
+
+    assert score["label"] == "bad"
+
+
+def test_score_response_marks_refund_without_checking_policy_as_bad():
+    score = score_response(
+        "I would just give them a refund without checking the policy.",
+        "Employees must never guess about refund policy. They should check the policy or ask a manager.",
+        {},
+    )
+
+    assert score["label"] == "bad"
+
+
+def test_score_response_marks_yelling_at_customer_as_bad():
+    score = score_response(
+        "I yell at them, I refuse to listen to rude people.",
+        "If a customer is upset, remain calm, listen respectfully, and contact a supervisor if needed.",
+        {},
+    )
+
+    assert score["label"] == "bad"
+
+
+def test_score_response_marks_not_telling_supervisor_as_bad():
+    score = score_response(
+        "I would not tell the supervisor and would handle it myself.",
+        "Unsafe actions must be reported to a supervisor immediately.",
+        {},
+    )
+
+    assert score["label"] == "bad"
+
+
+def test_score_response_marks_leaving_sharp_tool_as_bad():
+    score = score_response(
+        "I would leave the sharp tool where it is.",
+        "Employees must not leave sharp tools unattended.",
+        {},
+    )
+
+    assert score["label"] == "bad"
+
+
+def test_score_response_marks_refund_without_checking_anything_as_bad():
+    score = score_response(
+        "I would approve the refund without checking anything.",
+        "Employees must never guess about refund policy. They should check the policy or ask a manager.",
+        {},
+    )
+
+    assert score["label"] == "bad"
+
+
+def test_score_response_marks_look_up_policy_as_good():
+    score = score_response(
+        "I would look up the policy.",
+        "Employees must never guess about refund policy. They should check the policy or ask a manager.",
+        {},
+    )
+
+    assert score["label"] == "good"
+
+
+def test_score_response_marks_keep_yelling_as_bad():
+    score = score_response(
+        "I would keep yelling until they leave.",
+        "If a customer is upset, remain calm, listen respectfully, and contact a supervisor if needed.",
+        {},
+    )
+
+    assert score["label"] == "bad"
